@@ -129,7 +129,10 @@ module K8s
     # @param resource [K8s::Resource]
     # @return [Boolean]
     def keep_resource?(resource)
-      @keep_resources["#{resource.kind}:#{resource.metadata.name}@#{resource.metadata.namespace}"] == resource.metadata&.annotations&.dig(@checksum_annotation)
+      keep_annotation = @keep_resources["#{resource.kind}:#{resource.metadata.name}@#{resource.metadata.namespace}"]
+      return false unless keep_annotation
+
+      keep_annotation == resource.metadata&.annotations&.dig(@checksum_annotation)
     end
 
     # Delete all stack resources that were not applied
