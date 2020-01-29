@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module K8s
-  class Client
+  class Ruby
     # Updated on releases using semver.
-    VERSION = "0.10.4"
+    VERSION = "0.10.5"
   end
 end

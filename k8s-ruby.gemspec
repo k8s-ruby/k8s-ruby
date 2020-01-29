@@ -1,17 +1,17 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "k8s/client/version"
+require "k8s/ruby/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "k8s-client"
-  spec.version       = K8s::Client::VERSION
-  spec.authors       = ["Kontena, Inc."]
-  spec.email         = ["info@kontena.io"]
+  spec.name          = "k8s-ruby"
+  spec.version       = K8s::Ruby::VERSION
+  spec.authors       = ["rdx.net", "Kontena, Inc."]
+  spec.email         = ["firstname.lastname@rdx.net"]
   spec.license       = "Apache-2.0"
 
-  spec.summary       = "Kubernetes client library"
-  spec.homepage      = "https://github.com/kontena/k8s-client"
+  spec.summary       = "Kubernetes client library for Ruby"
+  spec.homepage      = "https://github.com/rdxnet/k8s-ruby"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
