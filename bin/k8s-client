@@ -3,7 +3,7 @@
 
 require 'optparse'
 require 'uri'
-require 'k8s-client'
+require 'k8s-ruby'
 
 Options = Struct.new(
   :in_cluster_config,

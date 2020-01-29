@@ -1,7 +1,7 @@
 require "bundler/setup"
 require 'webmock/rspec'
 
-require "k8s-client"
+require "k8s-ruby"
 
 require_relative 'helpers/fixture_helpers'
 

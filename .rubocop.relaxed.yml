@@ -173,4 +173,4 @@ Naming/UncommunicativeMethodParamName: # disabled because camelCased params are 
 Naming/FileName:
   Enabled: true
   Exclude:
-    - lib/k8s-client.rb # ignored because gem name is k8s-client, so 'require k8s-client' and gem 'k8s-client' in Gemfile work
+    - lib/k8s-ruby.rb # ignored because gem name is k8s-ruby, so 'require k8s-ruby' and gem 'k8s-ruby' in Gemfile work

@@ -3,7 +3,7 @@ rspec:
   volumes:
   - .:/app
   entrypoint: bundle exec rspec
-k8s-client:
+k8s-ruby:
   build: .
   volumes:
   - .:/app

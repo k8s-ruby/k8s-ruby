@@ -1,11 +1,19 @@
-# K8s::Client
+# K8s::Client provided by k8s-ruby
 
-[![Build Status](https://travis-ci.com/kontena/k8s-client.svg?branch=master)](https://travis-ci.com/kontena/k8s-client)
-[![Gem Version](https://badge.fury.io/rb/k8s-client.svg)](https://badge.fury.io/rb/k8s-client)
-[![Yard Docs](http://img.shields.io/badge/yard-docs-blue.svg)](http://www.rubydoc.info/github/kontena/k8s-client/master)
+Ruby client library for the Kubernetes (1.9+) API.
 
+The `k8s-ruby` project is a fork of
+[kontena/k8s-client](https://github.com/kontena/k8s-client).
 
-Ruby client library for the Kubernetes (1.9+) API
+Unfortunately the company
+[Kontena.io went bankcrupt](https://blog.kontena.io/farewell/) at
+the end of the year 2019. They had created many wonderful Ruby projects which we
+are grateful.
+
+The `k8s-ruby` library is a community effort to keep `k8s-client`
+maintained without any dependencies to the former Kontena.io organization.
+The library was renamed in order to publish it to Rubygems without conflicting
+with `k8s-client`.
 
 ## Highlights
 
@@ -19,7 +27,7 @@ Ruby client library for the Kubernetes (1.9+) API
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'k8s-client'
+gem 'k8s-ruby'
 ```
 
 And then execute:
@@ -28,12 +36,12 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install k8s-client
+    $ gem install k8s-ruby
 
 And then load the code using:
 
 ```ruby
-require 'k8s-client'
+require 'k8s-ruby'
 ```
 
 ## Usage
@@ -44,8 +52,6 @@ The top-level `K8s::Client` provides access to separate `APIClient` instances fo
 Individual resources are returned as `K8s::Resource` instances, which are `RecursiveOpenStruct` instances providing attribute access (`resource.metadata.name`). The resource instances are returned by methods such as `client.api('v1').resource('nodes').get('foo')`, and passed as arguments for `client.api('v1').resource('nodes').create_resource(res)`. Resources can also be loaded from disk using `K8s::Resource.from_files(path)`, and passed to the top-level methods such as `client.create_resource(res)`, which lookup the correct API/Resource client from the resource `apiVersion` and `kind`.
 
 The different `K8s::Error::API` subclasses represent different HTTP response codes, such as `K8s::Error::NotFound` or `K8s::Error::Conflict`.
-
-See [`bin/k8s-client`](bin/k8s-client) for example code.
 
 ### Creating a client
 
@@ -218,4 +224,4 @@ end
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/kontena/k8s-client.
+Bug reports and pull requests are welcome on GitHub at [rdxnet/k8s-ruby](https://github.com/rdxnet/k8s-ruby).
