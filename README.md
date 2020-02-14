@@ -224,4 +224,4 @@ end
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at [rdxnet/k8s-ruby](https://github.com/rdxnet/k8s-ruby).
+Bug reports and pull requests are welcome on GitHub at [k8s-ruby/k8s-ruby](https://github.com/k8s-ruby/k8s-ruby).

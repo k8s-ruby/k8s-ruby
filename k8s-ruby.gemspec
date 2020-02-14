@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.license       = "Apache-2.0"
 
   spec.summary       = "Kubernetes client library for Ruby"
-  spec.homepage      = "https://github.com/rdxnet/k8s-ruby"
+  spec.homepage      = "https://github.com/k8s-ruby/k8s-ruby"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
