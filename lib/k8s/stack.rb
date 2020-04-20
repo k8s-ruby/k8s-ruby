@@ -94,7 +94,7 @@ module K8s
 
     # @param client [K8s::Client]
     # @return [Array<K8s::Resource>]
-    def apply(client, prune: true)
+    def apply(client, prune: true, patch: true)
       server_resources = client.get_resources(resources)
 
       resources.zip(server_resources).map do |resource, server_resource|
@@ -104,10 +104,11 @@ module K8s
         elsif server_resource.metadata.annotations&.dig(@checksum_annotation) != resource.checksum
           logger.info "Update resource #{resource.apiVersion}:#{resource.kind}/#{resource.metadata.name} in namespace #{resource.metadata.namespace} with checksum=#{resource.checksum}"
           r = prepare_resource(resource)
-          if server_resource.can_patch?(@last_config_annotation)
+          if patch && server_resource.can_patch?(@last_config_annotation)
+            # Patch: apply changes to specific fields only
             keep_resource! client.patch_resource(server_resource, server_resource.merge_patch_ops(r.to_hash, @last_config_annotation))
           else
-            # try to update with PUT
+            # Replace (PUT): replace complete object
             keep_resource! client.update_resource(server_resource.merge(prepare_resource(resource)))
           end
         else
