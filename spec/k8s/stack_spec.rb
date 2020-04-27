@@ -150,6 +150,12 @@ RSpec.describe K8s::Stack do
         subject.apply(client, prune: false)
       end
 
+      it "replaces the needed resource" do
+        subject.resources[0] = subject.resources[0].merge(metadata: { labels: {'foo' => 'bar'}})
+        expect(client).to receive(:update_resource) { |r| r }
+        subject.apply(client, prune: false, patch: false)
+      end
+
       it "updates the needed resource even when annotations missing" do
         returned_resources = resources.dup
         returned_resources = returned_resources.map { |r| subject.prepare_resource(r) unless r.nil? }
