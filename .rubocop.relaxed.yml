@@ -152,7 +152,7 @@ Metrics/ModuleLength:
 Metrics/CyclomaticComplexity:
   Enabled: false
 
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
 
 Metrics/MethodLength:
@@ -167,10 +167,31 @@ Metrics/PerceivedComplexity:
 Naming/VariableName: # disabled because camelCased params are used in kube api/yamls
   Enabled: false
 
-Naming/UncommunicativeMethodParamName: # disabled because camelCased params are used in kube api/yamls
+Naming/MethodParameterName: # disabled because camelCased params are used in kube api/yamls
   Enabled: false
 
 Naming/FileName:
   Enabled: true
   Exclude:
     - lib/k8s-ruby.rb # ignored because gem name is k8s-ruby, so 'require k8s-ruby' and gem 'k8s-ruby' in Gemfile work
+
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Lint/RaiseException:
+  Enabled: true
+
+Lint/StructNewOverride:
+  Enabled: true
+
+Style/ExponentialNotation:
+  Enabled: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true

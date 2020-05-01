@@ -49,7 +49,7 @@ Style/Alias:
 Style/BeginBlock:
   Enabled: true
 
-Naming/UncommunicativeMethodParamName:
+Naming/MethodParameterName:
   AllowedNames:
     - cn
 

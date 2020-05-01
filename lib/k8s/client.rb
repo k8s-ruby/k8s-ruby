@@ -167,7 +167,7 @@ module K8s
           @transport.gets(*api_paths, response_class: K8s::API::MetaV1::APIResourceList, skip_missing: skip_missing).each do |api_resource_list|
             api(api_resource_list.groupVersion).api_resources = api_resource_list.resources if api_resource_list
           end
-        rescue K8s::Error::NotFound, K8s::Error::ServiceUnavailable # rubocop:disable Lint/HandleExceptions
+        rescue K8s::Error::NotFound, K8s::Error::ServiceUnavailable
           # kubernetes api is in unstable state
           # because this is only performance optimization, better to skip prefetch and move on
         end
