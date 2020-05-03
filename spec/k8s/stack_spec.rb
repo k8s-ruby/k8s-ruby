@@ -80,29 +80,154 @@ RSpec.describe K8s::Stack do
       end
     end
 
-    context "which has extra resources with owner references" do
+    describe "having extra resources with owner references" do
       let(:resources) {
         subject.resources
       }
 
-      before do
-        extra_resource = subject.prepare_resource(subject.resources.pop)
-        extra_resource.metadata.ownerReferences = [
-          {
-            :apiVersion=>"certmanager.k8s.io/v1alpha1",
-            :kind=>"Certificate",
-            :name=>"kontena-lens"
-          }
-        ]
-        returned_resources = resources.dup
-        returned_resources = returned_resources.map { |r| subject.prepare_resource(r) unless r.nil? }
-        allow(client).to receive(:get_resources).with([K8s::Resource, K8s::Resource]).and_return(returned_resources)
-        allow(client).to receive(:list_resources).with(labelSelector: { 'k8s.kontena.io/stack' => 'whoami' }, skip_forbidden: true).and_return(returned_resources + [extra_resource])
+      let(:their_owner_reference) do
+        {
+          apiVersion: 'tests/v1',
+          kind: 'TheirTest',
+          name: 'TheirTestResource',
+          uid: 'their-uid-001',
+          controller: true,
+          blockOwnerDeletion: true
+        }
       end
 
-      it "keeps the resource" do
-        expect(client).not_to receive(:delete_resource)
-        subject.apply(client, prune: true)
+      let(:our_owner_reference) do
+        {
+          apiVersion: 'tests/v1',
+          kind: 'OurTest',
+          name: 'OurTestResource',
+          uid: 'uid-001',
+          controller: true,
+          blockOwnerDeletion: true
+        }
+      end
+
+      let(:our_extra_resource) do
+        K8s::Resource.new(
+          apiVersion: 'v1',
+          kind: 'Service',
+          metadata: {
+            namespace: 'default',
+            name: 'our-service',
+            labels: {
+              'k8s.kontena.io/stack': 'whoami'
+            },
+            ownerReferences: [our_owner_reference]
+          }
+        )
+      end
+
+      let(:their_extra_resource) do
+        K8s::Resource.new(
+          apiVersion: 'v1',
+          kind: 'Service',
+          metadata: {
+            namespace: 'default',
+            name: 'someones-service',
+            labels: {
+              'k8s.kontena.io/stack': 'whoami'
+            },
+            ownerReferences: [their_owner_reference]
+          }
+        )
+      end
+
+      let(:shared_extra_resource) do
+        K8s::Resource.new(
+          apiVersion: 'v1',
+          kind: 'Service',
+          metadata: {
+            namespace: 'default',
+            name: 'shared-service',
+            labels: {
+              'k8s.kontena.io/stack': 'whoami'
+            },
+            ownerReferences: [our_owner_reference, their_owner_reference]
+          }
+        )
+      end
+
+      let(:stack_resources) do
+        resources.dup.map do |r|
+          subject.prepare_resource(r) unless r.nil?
+        end
+      end
+
+      before do
+        allow(client)
+          .to receive(:get_resources)
+          .with([K8s::Resource, K8s::Resource, K8s::Resource])
+          .and_return(stack_resources)
+
+        allow(client)
+          .to receive(:list_resources)
+          .with(
+            labelSelector: { 'k8s.kontena.io/stack' => 'whoami' },
+            skip_forbidden: true
+          ).and_return(received_resources)
+      end
+
+      context "with default method args" do
+        let(:received_resources) do
+          stack_resources + [our_extra_resource, their_extra_resource, shared_extra_resource]
+        end
+
+        it "keeps all the resources" do
+          expect(client).not_to receive(:delete_resource)
+          subject.apply(client, prune: true)
+        end
+      end
+
+      context "with someone else's owner reference" do
+        let(:received_resources) do
+          stack_resources + [their_extra_resource]
+        end
+
+        it "keeps their resource" do
+          expect(client).not_to receive(:delete_resource)
+          subject.apply(client, prune: true, owner_reference: our_owner_reference)
+        end
+      end
+
+      context "with our owner reference" do
+        let(:received_resources) do
+          stack_resources + [our_extra_resource]
+        end
+
+        it "deletes our resource" do
+          expect(client)
+            .to receive(:delete_resource)
+            .with(our_extra_resource, propagationPolicy: 'Background')
+
+          subject.apply(client, prune: true, owner_reference: our_owner_reference)
+        end
+      end
+
+      context "with our and someone else's owner reference" do
+        let(:received_resources) do
+          stack_resources + [our_extra_resource, their_extra_resource, shared_extra_resource]
+        end
+
+        it "deletes both ours and the shared resource but keeps their resource" do
+          expect(client)
+            .to receive(:delete_resource)
+            .with(our_extra_resource, propagationPolicy: 'Background')
+
+          expect(client)
+            .to receive(:delete_resource)
+            .with(shared_extra_resource, propagationPolicy: 'Background')
+
+          expect(client)
+            .not_to receive(:delete_resource)
+            .with(their_extra_resource, propagationPolicy: 'Background')
+
+          subject.apply(client, prune: true, owner_reference: our_owner_reference)
+        end
       end
     end
 
@@ -117,7 +242,6 @@ RSpec.describe K8s::Stack do
         returned_resources = returned_resources.map { |r| subject.prepare_resource(r) unless r.nil? }
         allow(client).to receive(:get_resources).with([K8s::Resource, K8s::Resource]).and_return(returned_resources)
         allow(client).to receive(:list_resources).with(labelSelector: { 'k8s.kontena.io/stack' => 'whoami' }, skip_forbidden: true).and_return(returned_resources + [extra_resource])
-
       end
 
       it "deletes the extra resource" do
