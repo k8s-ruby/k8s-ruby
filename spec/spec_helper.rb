@@ -1,5 +1,6 @@
 require "bundler/setup"
 require 'webmock/rspec'
+require 'byebug'
 
 require "k8s-ruby"
 
