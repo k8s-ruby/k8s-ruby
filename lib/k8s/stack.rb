@@ -94,7 +94,7 @@ module K8s
 
     # @param client [K8s::Client]
     # @return [Array<K8s::Resource>]
-    def apply(client, prune: true, patch: true)
+    def apply(client, patch: true, prune: true, owner_reference: nil)
       server_resources = client.get_resources(resources)
 
       resources.zip(server_resources).map do |resource, server_resource|
@@ -117,7 +117,7 @@ module K8s
         end
       end
 
-      prune(client, keep_resources: true) if prune
+      prune(client, keep_resources: true, owner_reference: owner_reference) if prune
     end
 
     # key MUST NOT include resource.apiVersion: the same kind can be aliased in different APIs
@@ -140,7 +140,7 @@ module K8s
     # @param client [K8s::Client]
     # @param keep_resources [NilClass, Boolean]
     # @param skip_forbidden [Boolean]
-    def prune(client, keep_resources:, skip_forbidden: true)
+    def prune(client, keep_resources:, skip_forbidden: true, owner_reference: nil)
       # using skip_forbidden: assume we can't create resource types that we are forbidden to list, so we don't need to prune them either
       client.list_resources(labelSelector: { @label => name }, skip_forbidden: skip_forbidden).sort do |a, b|
         # Sort resources so that namespaced objects are deleted first
@@ -161,8 +161,8 @@ module K8s
 
         if resource_label != name
           # apiserver did not respect labelSelector
-        elsif resource.metadata&.ownerReferences && !resource.metadata.ownerReferences.empty?
-          logger.info "Server resource #{resource.apiVersion}:#{resource.apiKind}/#{resource.metadata.name} in namespace #{resource.metadata.namespace} has ownerReferences and will be kept"
+        elsif owner_references?(resource) && !resource_owner?(resource, owner_reference: owner_reference)
+          logger.info "Server resource #{resource.apiVersion}:#{resource.apiKind}/#{resource.metadata.name} in namespace #{resource.metadata.namespace} has external ownerReferences and will be kept"
         elsif keep_resources && keep_resource?(resource)
           # resource is up-to-date
         else
@@ -182,6 +182,27 @@ module K8s
     # @param client [K8s::Client]
     def delete(client)
       prune(client, keep_resources: false)
+    end
+
+    private
+
+    def owner_references?(resource)
+      resource&.metadata&.ownerReferences && !resource.metadata.ownerReferences.empty?
+    end
+
+    def resource_owner?(resource, owner_reference:)
+      return false unless resource&.metadata&.ownerReferences
+      return false if owner_reference.nil?
+
+      resource.metadata.ownerReferences.map(&:to_h).each do |theirs|
+        return true if
+          theirs[:apiVersion] == owner_reference[:apiVersion] &&
+          theirs[:kind] == owner_reference[:kind] &&
+          theirs[:name] == owner_reference[:name] &&
+          theirs[:uid] == owner_reference[:uid]
+      end
+
+      false
     end
   end
 end
