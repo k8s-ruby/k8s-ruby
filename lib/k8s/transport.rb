@@ -282,16 +282,16 @@ module K8s
       start = Time.now
       excon_client = options[:response_block] ? build_excon : excon
       response = excon_client.request(**excon_options)
-      t = Time.now - start
+      t = format('%<time>.3f', time: (Time.now - start))
 
       obj = options[:response_block] ? {} : parse_response(response, options, response_class: response_class)
     rescue K8s::Error::API => e
-      logger.warn { "#{format_request(options)} => HTTP #{e.code} #{e.reason} in #{'%.3f' % t}s" }
+      logger.warn { "#{format_request(options)} => HTTP #{e.code} #{e.reason} in #{t}s" }
       logger.debug { "Request: #{excon_options[:body]}" } if excon_options[:body]
       logger.debug { "Response: #{response.body}" }
       raise
     else
-      logger.info { "#{format_request(options)} => HTTP #{response.status}: <#{obj.class}> in #{'%.3f' % t}s" }
+      logger.info { "#{format_request(options)} => HTTP #{response.status}: <#{obj.class}> in #{t}s" }
       logger.debug { "Request: #{excon_options[:body]}" } if excon_options[:body]
       logger.debug { "Response: #{response.body}" }
       obj
@@ -310,7 +310,7 @@ module K8s
       responses = excon.requests(
         options.map{ |opts| request_options(**common_options.merge(opts)) }
       )
-      t = Time.now - start
+      t = format('%<time>.3f', time: (Time.now - start))
 
       objects = responses.zip(options).map{ |response, request_options|
         response_class = request_options[:response_class] || common_options[:response_class]
@@ -329,17 +329,17 @@ module K8s
         rescue K8s::Error::ServiceUnavailable => e
           raise unless retry_errors
 
-          logger.warn { "Retry #{format_request(request_options)} => HTTP #{e.code} #{e.reason} in #{'%.3f' % t}s" }
+          logger.warn { "Retry #{format_request(request_options)} => HTTP #{e.code} #{e.reason} in #{t}s" }
 
           # only retry the failed request, not the entire pipeline
           request(response_class: response_class, **common_options.merge(request_options))
         end
       }
     rescue K8s::Error => e
-      logger.warn { "[#{options.map{ |o| format_request(o) }.join ', '}] => HTTP #{e.code} #{e.reason} in #{'%.3f' % t}s" }
+      logger.warn { "[#{options.map{ |o| format_request(o) }.join ', '}] => HTTP #{e.code} #{e.reason} in #{t}s" }
       raise
     else
-      logger.info { "[#{options.map{ |o| format_request(o) }.join ', '}] => HTTP [#{responses.map(&:status).join ', '}] in #{'%.3f' % t}s" }
+      logger.info { "[#{options.map{ |o| format_request(o) }.join ', '}] => HTTP [#{responses.map(&:status).join ', '}] in #{t}s" }
       objects
     end
 
