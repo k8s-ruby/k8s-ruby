@@ -25,16 +25,20 @@ module K8s
   class Config < ConfigStruct
     # Common dry-types for config
     class Types
-      include Dry::Types.module
+      include Dry::Types()
     end
 
     # structured cluster
     class Cluster < ConfigStruct
       attribute :server, Types::String
-      attribute :insecure_skip_tls_verify, Types::Bool.optional.default(nil)
-      attribute :certificate_authority, Types::String.optional.default(nil)
-      attribute :certificate_authority_data, Types::String.optional.default(nil)
-      attribute :extensions, Types::Strict::Array.optional.default(nil)
+      attribute :insecure_skip_tls_verify,
+                Types::Bool.optional.default(nil, shared: true)
+      attribute :certificate_authority,
+                Types::String.optional.default(nil, shared: true)
+      attribute :certificate_authority_data,
+                Types::String.optional.default(nil, shared: true)
+      attribute :extensions,
+                Types::Strict::Array.optional.default(nil, shared: true)
     end
 
     # structured cluster with name
@@ -54,25 +58,25 @@ module K8s
       attribute :command, Types::String
       attribute :apiVersion, Types::String
       attribute :env, Types::Strict::Array.of(Types::Hash).optional.default(nil)
-      attribute :args, Types::Strict::Array.of(Types::String).optional.default(nil)
+      attribute :args, Types::Strict::Array.of(Types::String).optional.default(nil, shared: true)
     end
 
     # structured user
     class User < ConfigStruct
-      attribute :client_certificate, Types::String.optional.default(nil)
-      attribute :client_certificate_data, Types::String.optional.default(nil)
-      attribute :client_key, Types::String.optional.default(nil)
-      attribute :client_key_data, Types::String.optional.default(nil)
-      attribute :token, Types::String.optional.default(nil)
-      attribute :tokenFile, Types::String.optional.default(nil)
-      attribute :as, Types::String.optional.default(nil)
-      attribute :as_groups, Types::Array.of(Types::String).optional.default(nil)
-      attribute :as_user_extra, Types::Hash.optional.default(nil)
-      attribute :username, Types::String.optional.default(nil)
-      attribute :password, Types::String.optional.default(nil)
-      attribute :auth_provider, UserAuthProvider.optional.default(nil)
-      attribute :exec, UserExec.optional.default(nil)
-      attribute :extensions, Types::Strict::Array.optional.default(nil)
+      attribute :client_certificate, Types::String.optional.default(nil, shared: true)
+      attribute :client_certificate_data, Types::String.optional.default(nil, shared: true)
+      attribute :client_key, Types::String.optional.default(nil, shared: true)
+      attribute :client_key_data, Types::String.optional.default(nil, shared: true)
+      attribute :token, Types::String.optional.default(nil, shared: true)
+      attribute :tokenFile, Types::String.optional.default(nil, shared: true)
+      attribute :as, Types::String.optional.default(nil, shared: true)
+      attribute :as_groups, Types::Array.of(Types::String).optional.default(nil, shared: true)
+      attribute :as_user_extra, Types::Hash.optional.default(nil, shared: true)
+      attribute :username, Types::String.optional.default(nil, shared: true)
+      attribute :password, Types::String.optional.default(nil, shared: true)
+      attribute :auth_provider, UserAuthProvider.optional.default(nil, shared: true)
+      attribute :exec, UserExec.optional.default(nil, shared: true)
+      attribute :extensions, Types::Strict::Array.optional.default(nil, shared: true)
     end
 
     # structured user with name
@@ -87,8 +91,8 @@ module K8s
     class Context < ConfigStruct
       attribute :cluster, Types::Strict::String
       attribute :user, Types::Strict::String
-      attribute :namespace, Types::Strict::String.optional.default(nil)
-      attribute :extensions, Types::Strict::Array.optional.default(nil)
+      attribute :namespace, Types::Strict::String.optional.default(nil, shared: true)
+      attribute :extensions, Types::Strict::Array.optional.default(nil, shared: true)
     end
 
     # named context
@@ -97,14 +101,14 @@ module K8s
       attribute :context, Context
     end
 
-    attribute :kind, Types::Strict::String.optional.default(nil)
-    attribute :apiVersion, Types::Strict::String.optional.default(nil)
-    attribute :preferences, Types::Strict::Hash.optional.default(proc { {} })
-    attribute :clusters, Types::Strict::Array.of(NamedCluster).optional.default(proc { [] })
-    attribute :users, Types::Strict::Array.of(NamedUser).optional.default(proc { [] })
-    attribute :contexts, Types::Strict::Array.of(NamedContext).optional.default(proc { [] })
-    attribute :current_context, Types::Strict::String.optional.default(nil)
-    attribute :extensions, Types::Strict::Array.optional.default(proc { [] })
+    attribute :kind, Types::Strict::String.optional.default(nil, shared: true)
+    attribute :apiVersion, Types::Strict::String.optional.default(nil, shared: true)
+    attribute :preferences, Types::Strict::Hash.optional.default(proc { {} }, shared: true)
+    attribute :clusters, Types::Strict::Array.of(NamedCluster).optional.default(proc { [] }, shared: true)
+    attribute :users, Types::Strict::Array.of(NamedUser).optional.default(proc { [] }, shared: true)
+    attribute :contexts, Types::Strict::Array.of(NamedContext).optional.default(proc { [] }, shared: true)
+    attribute :current_context, Types::Strict::String.optional.default(nil, shared: true)
+    attribute :extensions, Types::Strict::Array.optional.default(proc { [] }, shared: true)
 
     # Loads a configuration from a YAML file
     #

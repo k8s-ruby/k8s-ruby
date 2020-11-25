@@ -31,10 +31,8 @@ RSpec.describe K8s::Client do
 
     let(:default_kubeconfig_path) { File.join(Dir.home, '.kube', 'config') }
 
-
     subject { described_class }
     context 'from KUBE_CA/KUBE_SERVER/KUBE_TOKEN variables' do
-
       let(:server) { "localhost" }
       let(:env) { { 'KUBE_TOKEN' => token, 'KUBE_CA' => ca, 'KUBE_SERVER' => server } }
 
@@ -159,12 +157,12 @@ RSpec.describe K8s::Client do
     STUB_APIS = {
       '/version' => 'api/version.json',
       '/api/v1' => 'api/api-v1.json',
-      '/apis' => 'api/apis.json',
-    }
+      '/apis' => 'api/apis.json'
+    }.freeze
 
     # jq -r '.groups[].versions[].groupVersion' spec/fixtures/api/apis.json
-    API_GROUPS = (
-        <<-EOM
+    API_GROUPS =
+      <<-EOM
           apiregistration.k8s.io/v1
           apiregistration.k8s.io/v1beta1
           extensions/v1beta1
@@ -189,8 +187,8 @@ RSpec.describe K8s::Client do
           storage.k8s.io/v1beta1
           admissionregistration.k8s.io/v1beta1
           apiextensions.k8s.io/v1beta1
-        EOM
-    ).split
+      EOM
+      .split
 
     before do
       STUB_APIS.each do |path, fixture_path|
@@ -216,7 +214,7 @@ RSpec.describe K8s::Client do
     describe '#version' do
       it "returns version" do
         expect(subject.version.to_hash).to match hash_including(
-          gitVersion: 'v1.10.5',
+          gitVersion: 'v1.10.5'
         )
       end
     end
@@ -225,14 +223,14 @@ RSpec.describe K8s::Client do
       it "returns core API with resources" do
         expect(subject.api).to match K8s::APIClient
         expect(subject.api.api_version).to eq 'v1'
-        expect(subject.api.api_resources.map{|r| r.name }).to include 'nodes', 'pods', 'services'
+        expect(subject.api.api_resources.map{ |r| r.name }).to include 'nodes', 'pods', 'services'
       end
 
       it "caches api_resources" do
         expect(transport).to receive(:get).with('/api/v1', Hash).once.and_call_original
 
         3.times do
-          expect(subject.api.api_resources.map{|r| r.name }).to include 'nodes', 'pods', 'services'
+          expect(subject.api.api_resources.map{ |r| r.name }).to include 'nodes', 'pods', 'services'
         end
       end
     end
@@ -241,7 +239,7 @@ RSpec.describe K8s::Client do
       it "returns client for each api" do
         expect(subject.apis).to match Array
         expect(subject.apis.first).to match K8s::APIClient
-        expect(subject.apis.map{|a| a.api_version}).to eq(['v1'] + API_GROUPS)
+        expect(subject.apis.map{ |a| a.api_version}).to eq(['v1'] + API_GROUPS)
       end
 
       context "with partially cached api resources" do
@@ -255,7 +253,7 @@ RSpec.describe K8s::Client do
 
           apis = subject.apis(prefetch_resources: true)
 
-          expect(apis.map{|api| api.api_resources}.flatten.map{|r| r.name}).to include 'nodes', 'pods', 'deployments', 'jobs'
+          expect(apis.map{ |api| api.api_resources}.flatten.map{ |r| r.name}).to include 'nodes', 'pods', 'deployments', 'jobs'
         end
       end
 
@@ -278,20 +276,22 @@ RSpec.describe K8s::Client do
     describe '#create_resource' do
       context "for a service resource" do
         let(:resource) { resource_fixture('resources/service.yaml') }
-        let(:server_resource) { resource.merge(
-          metadata: { resourceVersion: '1'}
-        ) }
+        let(:server_resource) {
+          resource.merge(
+            { metadata: { resourceVersion: '1' } }
+          )
+        }
 
         before do
           stub_request(:post, 'localhost:8080/api/v1/namespaces/default/services')
             .with(
               headers: { 'Content-Type' => 'application/json' },
-              body: resource.to_hash,
+              body: resource.to_hash
             )
             .to_return(
               status: 201,
               headers: { 'Content-Type' => 'application/json' },
-              body: server_resource.to_json,
+              body: server_resource.to_json
             )
         end
 
@@ -309,16 +309,18 @@ RSpec.describe K8s::Client do
     describe '#get_resource' do
       context "for a service resource" do
         let(:resource) { resource_fixture('resources/service.yaml') }
-        let(:server_resource) { resource.merge(
-          metadata: { resourceVersion: '1'}
-        ) }
+        let(:server_resource) {
+          resource.merge(
+            metadata: { resourceVersion: '1' }
+          )
+        }
 
         before do
           stub_request(:get, 'localhost:8080/api/v1/namespaces/default/services/whoami')
             .to_return(
               status: 200,
               headers: { 'Content-Type' => 'application/json' },
-              body: server_resource.to_json,
+              body: server_resource.to_json
             )
         end
 
@@ -335,23 +337,27 @@ RSpec.describe K8s::Client do
 
     describe '#update_resource' do
       context "for a service resource" do
-        let(:resource) { resource_fixture('resources/service.yaml').merge(
-          metadata: { resourceVersion: '1'}
-        ) }
-        let(:server_resource) { resource_fixture('resources/service.yaml').merge(
-          metadata: { resourceVersion: '2'}
-        ) }
+        let(:resource) {
+          resource_fixture('resources/service.yaml').merge(
+            metadata: { resourceVersion: '1' }
+          )
+        }
+        let(:server_resource) {
+          resource_fixture('resources/service.yaml').merge(
+            metadata: { resourceVersion: '2' }
+          )
+        }
 
         before do
           stub_request(:put, 'localhost:8080/api/v1/namespaces/default/services/whoami')
             .with(
               headers: { 'Content-Type' => 'application/json' },
-              body: resource.to_hash,
+              body: resource.to_hash
             )
             .to_return(
               status: 200,
               headers: { 'Content-Type' => 'application/json' },
-              body: server_resource.to_json,
+              body: server_resource.to_json
             )
         end
 
@@ -369,16 +375,18 @@ RSpec.describe K8s::Client do
     describe '#delete_resource' do
       context "for a service resource" do
         let(:resource) { resource_fixture('resources/service.yaml') }
-        let(:server_resource) { resource.merge(
-          metadata: { resourceVersion: '3'}
-        ) }
+        let(:server_resource) {
+          resource.merge(
+            metadata: { resourceVersion: '3' }
+          )
+        }
 
         before do
           stub_request(:delete, 'localhost:8080/api/v1/namespaces/default/services/whoami')
             .to_return(
               status: 200,
               headers: { 'Content-Type' => 'application/json' },
-              body: server_resource.to_json,
+              body: server_resource.to_json
             )
         end
 
@@ -395,10 +403,12 @@ RSpec.describe K8s::Client do
 
     describe '#get_resources' do
       context "for standard resources" do
-        let(:resources) {[
-          K8s::Resource.from_file(fixture_path('resources/service-foo.yaml')),
-          K8s::Resource.from_file(fixture_path('resources/configmap-bar.yaml')),
-        ]}
+        let(:resources) {
+          [
+            K8s::Resource.from_file(fixture_path('resources/service-foo.yaml')),
+            K8s::Resource.from_file(fixture_path('resources/configmap-bar.yaml'))
+          ]
+        }
 
         context "which already exist" do
           before do
@@ -406,13 +416,13 @@ RSpec.describe K8s::Client do
               .to_return(
                 status: 200,
                 headers: { 'Content-Type' => 'application/json' },
-                body: fixture('api/services-foo.json'),
+                body: fixture('api/services-foo.json')
               )
             stub_request(:get, 'localhost:8080/api/v1/namespaces/default/configmaps/bar')
               .to_return(
                 status: 200,
                 headers: { 'Content-Type' => 'application/json' },
-                body: fixture('api/configmaps-bar.json'),
+                body: fixture('api/configmaps-bar.json')
               )
           end
 
@@ -420,12 +430,12 @@ RSpec.describe K8s::Client do
             expect(transport).to receive(:requests).once.with(
               hash_including(path: '/api/v1'),
               skip_missing: true,
-              response_class: anything,
+              response_class: anything
             ).and_call_original
             expect(transport).to receive(:requests).once.with(
               hash_including(path: '/api/v1/namespaces/default/services/foo'),
               hash_including(path: '/api/v1/namespaces/default/configmaps/bar'),
-              skip_missing: true,
+              skip_missing: true
             ).and_call_original
 
             r = subject.get_resources(resources)
@@ -433,11 +443,11 @@ RSpec.describe K8s::Client do
             expect(r).to match [K8s::Resource, K8s::Resource]
             expect(r[0].to_hash).to match hash_including(
               apiVersion: 'v1',
-              kind: 'Service',
+              kind: 'Service'
             )
             expect(r[1].to_hash).to match hash_including(
               apiVersion: 'v1',
-              kind: 'ConfigMap',
+              kind: 'ConfigMap'
             )
           end
         end
@@ -448,13 +458,13 @@ RSpec.describe K8s::Client do
               .to_return(
                 status: 200,
                 headers: { 'Content-Type' => 'application/json' },
-                body: fixture('api/services-foo.json'),
+                body: fixture('api/services-foo.json')
               )
             stub_request(:get, 'localhost:8080/api/v1/namespaces/default/configmaps/bar')
               .to_return(
                 status: 404,
                 headers: { 'Content-Type' => 'application/json' },
-                body: fixture('api/configmaps-bar-404.json'),
+                body: fixture('api/configmaps-bar-404.json')
               )
           end
 
@@ -464,7 +474,7 @@ RSpec.describe K8s::Client do
             expect(r).to match [K8s::Resource, nil]
             expect(r[0].to_hash).to match hash_including(
               apiVersion: 'v1',
-              kind: 'Service',
+              kind: 'Service'
             )
             expect(r[1]).to be nil
           end
@@ -472,10 +482,12 @@ RSpec.describe K8s::Client do
       end
 
       context "for custom resources" do
-        let(:resources) {[
-          K8s::Resource.from_file(fixture_path('resources/test/crd-test.yaml')),
-          K8s::Resource.from_file(fixture_path('resources/test/test.yaml')),
-        ]}
+        let(:resources) {
+          [
+            K8s::Resource.from_file(fixture_path('resources/test/crd-test.yaml')),
+            K8s::Resource.from_file(fixture_path('resources/test/test.yaml'))
+          ]
+        }
 
         context "which do not yet exist" do
           before do
@@ -483,17 +495,17 @@ RSpec.describe K8s::Client do
               .to_return(
                 status: 404,
                 headers: { 'Content-Type' => 'text/plain' },
-                body: '404 page not found',
+                body: '404 page not found'
               )
             stub_request(:get, 'localhost:8080/apis/pharos-test.k8s.io/v0')
               .to_return(
                 status: 404,
                 headers: { 'Content-Type' => 'text/plain' },
-                body: '404 page not found',
+                body: '404 page not found'
               )
             stub_request(:get, 'localhost:8080/apis/pharos-test.k8s.io/v0/namespaces/default/tests/test')
               .to_return(
-                status: 404,
+                status: 404
               )
           end
 
@@ -519,8 +531,8 @@ RSpec.describe K8s::Client do
                 apiVersion: 'v1',
                 kind: 'ServiceList',
                 metadata: {},
-                items: [service_resource],
-              }.to_json,
+                items: [service_resource]
+              }.to_json
             )
           stub_request(:get, 'localhost:8080/api/v1/configmaps')
             .to_return(
@@ -530,16 +542,16 @@ RSpec.describe K8s::Client do
                 apiVersion: 'v1',
                 kind: 'ConfgiMapList',
                 metadata: {},
-                items: [],
-              }.to_json,
+                items: []
+              }.to_json
             )
         end
 
         it "returns existing resources" do
           expect(subject.list_resources([
-            subject.api('v1').resource('services'),
-            subject.api('v1').resource('configmaps'),
-          ])).to eq [service_resource]
+                                          subject.api('v1').resource('services'),
+                                          subject.api('v1').resource('configmaps')
+                                        ])).to eq [service_resource]
         end
       end
 
@@ -553,8 +565,8 @@ RSpec.describe K8s::Client do
                 apiVersion: 'v1',
                 kind: 'ServiceList',
                 metadata: {},
-                items: [service_resource],
-              }.to_json,
+                items: [service_resource]
+              }.to_json
             )
           stub_request(:get, 'localhost:8080/api/v1/configmaps')
             .to_return(
@@ -567,21 +579,21 @@ RSpec.describe K8s::Client do
         it "raises Forbidden" do
           expect{
             subject.list_resources([
-              subject.api('v1').resource('services'),
-              subject.api('v1').resource('configmaps'),
-            ])
+                                     subject.api('v1').resource('services'),
+                                     subject.api('v1').resource('configmaps')
+                                   ])
           }.to raise_error(K8s::Error::Forbidden)
         end
 
         describe 'skip_forbidden: true' do
           it "returns existing resources" do
             expect(subject.list_resources(
-              [
-                subject.api('v1').resource('services'),
-                subject.api('v1').resource('configmaps'),
-              ],
-              skip_forbidden: true,
-            )).to eq [service_resource]
+                     [
+                       subject.api('v1').resource('services'),
+                       subject.api('v1').resource('configmaps')
+                     ],
+                     skip_forbidden: true
+                   )).to eq [service_resource]
           end
         end
       end
@@ -591,9 +603,9 @@ RSpec.describe K8s::Client do
           allow(transport).to receive(:gets).and_raise(K8s::Error::NotFound.new('GET', '/foo', 404, 'NotFound'))
           expect{
             subject.list_resources([
-              subject.api('v1').resource('services'),
-              subject.api('v1').resource('configmaps'),
-            ])
+                                     subject.api('v1').resource('services'),
+                                     subject.api('v1').resource('configmaps')
+                                   ])
           }.to raise_error(K8s::Error::NotFound)
         end
       end
