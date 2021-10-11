@@ -98,8 +98,6 @@ module K8s
       if auth_provider['id-token']
         json_path = JsonPath.new(auth_provider['id-token'][1...-1])
         # json_path.first(auth_data)
-      else
-        # auth_data
       end
     end
 
