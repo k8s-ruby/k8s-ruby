@@ -219,6 +219,7 @@ RSpec.describe K8s::Transport do
               auth_provider: {
                 name: 'fake',
                 config: {
+                  # If I take away these two lines, will this test fail? is the id-token dependant on it?
                   # 'cmd-path' => 'cat',
                   # 'cmd-args' => "#{fixture_path}/config/kubeconfig_auth_provider_data.json",
                   'id-token' => '{.credential.access_token}'
