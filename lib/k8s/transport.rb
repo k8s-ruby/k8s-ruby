@@ -96,8 +96,10 @@ module K8s
     def self.token_from_auth_provider(auth_provider)
       # auth_data = `#{auth_provider['cmd-path']} #{auth_provider['cmd-args']}`.strip
       if auth_provider['id-token']
-        json_path = JsonPath.new(auth_provider['id-token'][1...-1])
+        json_path = auth_provider['id-token']
         # json_path.first(auth_data)
+      # else
+      #   auth_data
       end
     end
 
