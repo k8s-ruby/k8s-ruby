@@ -200,7 +200,7 @@ RSpec.describe K8s::Transport do
       end
     end
 
-    context 'for a kubeconfig using auth-provider' do
+    context 'for a kubeconfig using auth-provider with id_token' do
       let(:config) { K8s::Config.new(
         clusters: [
           {
@@ -219,9 +219,9 @@ RSpec.describe K8s::Transport do
               auth_provider: {
                 name: 'fake',
                 config: {
-                  'cmd-path' => 'cat',
-                  'cmd-args' => "#{fixture_path}/config/kubeconfig_auth_provider_data.json",
-                  'token-key' => '{.credential.access_token}'
+                  # 'cmd-path' => 'cat',
+                  # 'cmd-args' => "#{fixture_path}/config/kubeconfig_auth_provider_data.json",
+                  'id-token' => 'SECRET_TOKEN'
                 }
               }
             }
@@ -238,6 +238,61 @@ RSpec.describe K8s::Transport do
           }
         ],
         current_context: 'test'
+      ) }
+
+      subject { described_class.config(config) }
+
+      describe '#request_options' do
+        it "includes the Authorization token" do
+          expect(subject.request_options(method: 'GET', path: '/')).to eq({
+            method: 'GET',
+            path: '/',
+            headers: {
+              'Authorization' => 'Bearer SECRET_TOKEN',
+            },
+          })
+        end
+      end
+    end
+
+    context 'for a kubeconfig using auth-provider with token_key' do
+      let(:config) { K8s::Config.new(
+        clusters: [
+          {
+            name: 'kubernetes',
+            cluster: {
+              server: 'http://localhost:8080',
+              certificate_authority: 'ca.pem',
+
+            }
+          }
+        ],
+        users: [
+          {
+            name: 'testv2',
+            user: {
+              auth_provider: {
+                name: 'fake',
+                config: {
+                  'cmd-path' => 'cat',
+                  'cmd-args' => "#{fixture_path}/config/kubeconfig_auth_provider_data.json",
+                  'token-key' => '{.credential.access_token}'
+                }
+              }
+            }
+          }
+        ],
+
+        contexts: [
+          {
+            name: 'testv2',
+            context: {
+              cluster: 'kubernetes',
+              user: 'testv2'
+            }
+          }
+        ],
+        current_context: 'testv2'
       ) }
 
       subject { described_class.config(config) }

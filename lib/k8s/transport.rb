@@ -94,12 +94,16 @@ module K8s
     # @param auth_provider [K8s::Config::UserAuthProvider]
     # @return [String]
     def self.token_from_auth_provider(auth_provider)
-      auth_data = `#{auth_provider['config']['cmd-path']} #{auth_provider['config']['cmd-args']}`.strip
-      if auth_provider['config']['token-key']
-        json_path = JsonPath.new(auth_provider['config']['token-key'][1...-1])
-        json_path.first(auth_data)
+      if auth_provider['id-token']
+        json_path = auth_provider['id-token']
       else
-        auth_data
+        auth_data = `#{auth_provider['cmd-path']} #{auth_provider['cmd-args']}`.strip
+        if auth_provider['token-key']
+          json_path = JsonPath.new(auth_provider['token-key'][1...-1])
+          json_path.first(auth_data)
+        else
+          auth_data
+        end
       end
     end
 

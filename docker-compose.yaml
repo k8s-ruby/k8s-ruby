@@ -1,10 +1,12 @@
-rspec:
-  build: .
-  volumes:
-  - .:/app
-  entrypoint: bundle exec rspec
-k8s-ruby:
-  build: .
-  volumes:
-  - .:/app
-  entrypoint: bundle exec bin/k8s-client
+services:
+  rspec:
+    build: .
+    volumes:
+    - .:/app
+    entrypoint: bundle exec rspec
+  k8s-ruby:
+    build: .
+    volumes:
+    - .:/app
+    entrypoint: bundle exec bin/k8s-client
+    
