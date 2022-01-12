@@ -137,8 +137,14 @@ module K8s
       port = ENV['KUBERNETES_SERVICE_PORT_HTTPS'].to_s
       raise(K8s::Error::Configuration, "in_cluster_config failed: KUBERNETES_SERVICE_PORT_HTTPS environment not set") if port.empty?
 
+      host_with_ipv6_brackets_if_needed = if host.include? "::"
+        "[#{host}]"
+      else
+        host
+      end
+
       new(
-        "https://#{host}:#{port}",
+        "https://#{host_with_ipv6_brackets_if_needed}:#{port}",
         ssl_verify_peer: options.key?(:ssl_verify_peer) ? options.delete(:ssl_verify_peer) : true,
         ssl_ca_file: options.delete(:ssl_ca_file) || File.join((ENV['TELEPRESENCE_ROOT'] || '/'), 'var/run/secrets/kubernetes.io/serviceaccount/ca.crt'),
         auth_token: options.delete(:auth_token) || File.read(File.join((ENV['TELEPRESENCE_ROOT'] || '/'), 'var/run/secrets/kubernetes.io/serviceaccount/token')),
