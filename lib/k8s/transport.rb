@@ -364,8 +364,11 @@ module K8s
     # @param options [Hash] @see #request
     # @return [Array<response_class, Hash, NilClass>]
     def get(*path, **options)
-      options = options.merge({ method: 'GET', path: self.path(*path) })
-      request(**options)
+      request(
+        method: 'GET',
+        path: self.path(*path),
+        **options
+      )
     end
 
     # @param paths [Array<String>]
