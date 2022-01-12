@@ -5,25 +5,27 @@ RSpec.describe K8s::ResourceClient do
 
   context "for the nodes API" do
     let(:api_client) { K8s::APIClient.new(transport, 'v1') }
-    let(:api_resource) { K8s::API::MetaV1::APIResource.new(
-      name: "nodes",
-      singularName: "",
-      namespaced: false,
-      kind: "Node",
-      verbs: [
-        "create",
-        "delete",
-        "deletecollection",
-        "get",
-        "list",
-        "patch",
-        "update",
-        "watch",
-      ],
-      shortNames: [
-        "no",
-      ]
-    ) }
+    let(:api_resource) {
+      K8s::API::MetaV1::APIResource.new(
+        name: "nodes",
+        singularName: "",
+        namespaced: false,
+        kind: "Node",
+        verbs: %w(
+          create
+          delete
+          deletecollection
+          get
+          list
+          patch
+          update
+          watch
+        ),
+        shortNames: [
+          "no"
+        ]
+      )
+    }
 
     subject { described_class.new(transport, api_client, api_resource) }
 
@@ -56,13 +58,15 @@ RSpec.describe K8s::ResourceClient do
           list = subject.list
 
           expect(list).to match [K8s::Resource]
-          expect(list.map{|item| {
-            kind: item.kind,
-            namespace: item.metadata.namespace,
-            name: item.metadata.name,
-          } }).to match [
-            { kind: "Node", namespace: nil, name: "ubuntu-xenial" }
-          ]
+          expect(list.map{ |item|
+                   {
+                     kind: item.kind,
+                     namespace: item.metadata.namespace,
+                     name: item.metadata.name
+                   }
+                 }).to match [
+                   { kind: "Node", namespace: nil, name: "ubuntu-xenial" }
+                 ]
         end
       end
     end
@@ -90,11 +94,11 @@ RSpec.describe K8s::ResourceClient do
     end
 
     context "PUT /api/v1/nodes/*" do
-      let(:resource) { K8s::Resource.new(
-        kind: 'Node',
-        metadata: { name: 'test', resourceVersion: "1" },
-        spec: { unschedulable: true },
-      ) }
+      let(:resource) {
+        K8s::Resource.new({ kind: 'Node',
+                            metadata: { name: 'test', resourceVersion: "1" },
+                            spec: { unschedulable: true } })
+      }
 
       before do
         stub_request(:put, 'localhost:8080/api/v1/nodes/test')
@@ -103,13 +107,13 @@ RSpec.describe K8s::ResourceClient do
             body: {
               'kind' => 'Node',
               'metadata' => { 'name' => 'test', 'resourceVersion' => "1" },
-              'spec' => { 'unschedulable' => true },
-            },
+              'spec' => { 'unschedulable' => true }
+            }
           )
           .to_return(
             status: 200,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
@@ -125,11 +129,11 @@ RSpec.describe K8s::ResourceClient do
     end
 
     context "POST /api/v1/nodes/" do
-      let(:resource) { K8s::Resource.new(
-        kind: 'Node',
-        metadata: { name: 'test' },
-        spec: { unschedulable: true },
-      ) }
+      let(:resource) {
+        K8s::Resource.new({ kind: 'Node',
+                            metadata: { name: 'test' },
+                            spec: { unschedulable: true } })
+      }
 
       before do
         stub_request(:post, 'localhost:8080/api/v1/nodes')
@@ -138,13 +142,13 @@ RSpec.describe K8s::ResourceClient do
             body: {
               'kind' => 'Node',
               'metadata' => { 'name' => 'test' },
-              'spec' => { 'unschedulable' => true },
-            },
+              'spec' => { 'unschedulable' => true }
+            }
           )
           .to_return(
             status: 201,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
@@ -162,17 +166,19 @@ RSpec.describe K8s::ResourceClient do
 
   context "for the nodes status API" do
     let(:api_client) { K8s::APIClient.new(transport, 'v1') }
-    let(:api_resource) { K8s::API::MetaV1::APIResource.new(
-      name: "nodes/status",
-      singularName: "",
-      namespaced: false,
-      kind: "Node",
-      verbs: [
-        "get",
-        "patch",
-        "update",
-      ],
-    ) }
+    let(:api_resource) {
+      K8s::API::MetaV1::APIResource.new(
+        name: "nodes/status",
+        singularName: "",
+        namespaced: false,
+        kind: "Node",
+        verbs: %w(
+          get
+          patch
+          update
+        )
+      )
+    }
 
     subject { described_class.new(transport, api_client, api_resource) }
 
@@ -183,11 +189,11 @@ RSpec.describe K8s::ResourceClient do
     end
 
     context "PUT /api/v1/nodes/*/status" do
-      let(:resource) { K8s::Resource.new(
-        kind: 'Node',
-        metadata: { name: 'test', resourceVersion: "1" },
-        status: { foo: 'bar' },
-      ) }
+      let(:resource) {
+        K8s::Resource.new({ kind: 'Node',
+                            metadata: { name: 'test', resourceVersion: "1" },
+                            status: { foo: 'bar' } })
+      }
 
       before do
         stub_request(:put, 'localhost:8080/api/v1/nodes/test/status')
@@ -196,13 +202,13 @@ RSpec.describe K8s::ResourceClient do
             body: {
               'kind' => 'Node',
               'metadata' => { 'name' => 'test', 'resourceVersion' => "1" },
-              'status' => { 'foo' => 'bar' },
-            },
+              'status' => { 'foo' => 'bar' }
+            }
           )
           .to_return(
             status: 200,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
@@ -220,35 +226,37 @@ RSpec.describe K8s::ResourceClient do
 
   context "for the pods API" do
     let(:api_client) { K8s::APIClient.new(transport, 'v1') }
-    let(:api_resource) { K8s::API::MetaV1::APIResource.new(
-      name: "pods",
-      singularName: "",
-      namespaced: true,
-      kind: "Pod",
-      verbs: [
-        "create",
-        "delete",
-        "deletecollection",
-        "get",
-        "list",
-        "patch",
-        "update",
-        "watch",
-      ],
-      shortNames: [
-        "po",
-      ],
-      categories: [
-        "all",
-      ]
-    ) }
+    let(:api_resource) {
+      K8s::API::MetaV1::APIResource.new(
+        name: "pods",
+        singularName: "",
+        namespaced: true,
+        kind: "Pod",
+        verbs: %w(
+          create
+          delete
+          deletecollection
+          get
+          list
+          patch
+          update
+          watch
+        ),
+        shortNames: [
+          "po"
+        ],
+        categories: [
+          "all"
+        ]
+      )
+    }
 
     subject { described_class.new(transport, api_client, api_resource) }
 
-    let(:resource) { K8s::Resource.new(
-      kind: 'Pod',
-      metadata: { name: 'test', namespace: 'default' },
-    ) }
+    let(:resource) {
+      K8s::Resource.new({ kind: 'Pod',
+                          metadata: { name: 'test', namespace: 'default' } })
+    }
     let(:resource_list) { K8s::API::MetaV1::List.new(metadata: {}, items: [resource]) }
 
     context "POST /api/v1/pods/namespaces/default/pods" do
@@ -258,13 +266,13 @@ RSpec.describe K8s::ResourceClient do
             headers: { 'Content-Type' => 'application/json' },
             body: {
               'kind' => 'Pod',
-              'metadata' => { 'name' => 'test', 'namespace' => 'default' },
-            },
+              'metadata' => { 'name' => 'test', 'namespace' => 'default' }
+            }
           )
           .to_return(
             status: 201,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
@@ -286,19 +294,19 @@ RSpec.describe K8s::ResourceClient do
           .with(
             headers: { 'Content-Type' => 'application/strategic-merge-patch+json' },
             body: {
-              'spec' => { 'nodeName': 'foo' },
-            }.to_json, # XXX: webmock doesn't understand +json
+              'spec' => { 'nodeName': 'foo' }
+            }.to_json # XXX: webmock doesn't understand +json
           )
           .to_return(
             status: 201,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
       describe '#merge_patch' do
         it "returns a resource" do
-          obj = subject.merge_patch('test', {'spec' => { 'nodeName' => 'foo'}}, namespace: 'default')
+          obj = subject.merge_patch('test', { 'spec' => { 'nodeName' => 'foo' } }, namespace: 'default')
 
           expect(obj).to match K8s::Resource
           expect(obj.kind).to eq "Pod"
