@@ -40,19 +40,16 @@ module K8s
     end
 
     # @param hash [Hash]
-    # @param recurse_over_arrays [Boolean]
     # @param options [Hash] see RecursiveOpenStruct#initialize
-    def initialize(hash, recurse_over_arrays: true, **options)
-      super(hash,
-        recurse_over_arrays: recurse_over_arrays,
-        **options
-      )
+    def initialize(hash, options = {})
+      options_with_defaults = { recurse_over_arrays: true }.merge(options)
+      super(hash, options_with_defaults)
     end
 
-    # @param options [Hash] see Hash#to_json
+    # @param args [Array] see Hash#to_json
     # @return [String]
-    def to_json(options={})
-      to_hash.to_json(**options)
+    def to_json(*args, **options)
+      to_hash.to_json(*args, **options)
     end
 
     # @param other [K8s::Resource]

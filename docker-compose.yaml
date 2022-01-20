@@ -16,12 +16,12 @@ services:
     volumes:
       - .:/app
     entrypoint: bundle exec rspec
-  # # Fails, please fix
-  # rspec-3.0:
-  #   build:
-  #     context: .
-  #     args:
-  #       BASE_IMAGE: ruby:3.0
-  #   volumes:
-  #     - .:/app
-  #   entrypoint: bundle exec rspec
+
+  rspec-3.0:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ruby:3.0
+    volumes:
+      - .:/app
+    entrypoint: bundle exec rspec
