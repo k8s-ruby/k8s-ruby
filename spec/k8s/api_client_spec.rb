@@ -107,10 +107,10 @@ RSpec.describe K8s::APIClient do
     describe '#client_for_resource' do
       context "for an invalid resource apiVersion" do
         let(:resource) {
-          K8s::Resource.new(
+          K8s::Resource.new({
             apiVersion: 'test/v1',
             kind: 'Test',
-          )
+          })
         }
 
         it "raises error" do
@@ -120,10 +120,10 @@ RSpec.describe K8s::APIClient do
 
       context "for an invalid resource kind" do
         let(:resource) {
-          K8s::Resource.new(
+          K8s::Resource.new({
             apiVersion: 'v1',
             kind: 'Wtf',
-          )
+          })
         }
 
         it "raises error" do

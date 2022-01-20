@@ -8,6 +8,7 @@
 /tmp/
 Gemfile.lock
 .ruby-version
+.tool-versions
 /.byebug_history
 
 # rspec failure tracking

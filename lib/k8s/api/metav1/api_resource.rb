@@ -12,8 +12,8 @@ module K8s
         attribute :version, Types::Strict::String.optional.default(nil)
         attribute :kind, Types::Strict::String
         attribute :verbs, Types::Strict::Array.of(Types::Strict::String)
-        attribute :shortNames, Types::Strict::Array.of(Types::Strict::String).optional.default(proc { [] })
-        attribute :categories, Types::Strict::Array.of(Types::Strict::String).optional.default(proc { [] })
+        attribute :shortNames, Types::Strict::Array.of(Types::Strict::String).optional.default(proc { [] }, shared: true)
+        attribute :categories, Types::Strict::Array.of(Types::Strict::String).optional.default(proc { [] }, shared: true)
       end
 
       # @see https://godoc.org/k8s.io/apimachinery/pkg/apis/meta/v1#APIResourceList

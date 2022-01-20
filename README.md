@@ -175,7 +175,7 @@ pods = client.api('v1').resource('pods', namespace: 'default').delete_collection
 
 #### Programmatically defined resources
 ```ruby
-service = K8s::Resource.new(
+service = K8s::Resource.new({
   apiVersion: 'v1',
   kind: 'Service',
   metadata: {
@@ -189,7 +189,7 @@ service = K8s::Resource.new(
     ],
     selector: {'app' => 'test'},
   },
-)
+})
 
 logger.info "Create service=#{service.metadata.name} in namespace=#{service.metadata.namespace}"
 
