@@ -10,6 +10,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - run: docker-compose build --parallel
       - run: docker-compose up --build rspec-2.6
       - run: docker-compose up --build rspec-2.7
       - run: docker-compose up --build rspec-3.0
