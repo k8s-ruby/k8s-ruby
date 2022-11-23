@@ -6,8 +6,6 @@ services:
         BASE_IMAGE: ruby:2.6
     volumes:
       - .:/app
-    entrypoint: bundle exec rspec
-
   rspec-2.7:
     build:
       context: .
@@ -15,8 +13,6 @@ services:
         BASE_IMAGE: ruby:2.7
     volumes:
       - .:/app
-    entrypoint: bundle exec rspec
-
   rspec-3.0:
     build:
       context: .
@@ -24,4 +20,3 @@ services:
         BASE_IMAGE: ruby:3.0
     volumes:
       - .:/app
-    entrypoint: bundle exec rspec

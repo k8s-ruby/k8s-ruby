@@ -32,11 +32,11 @@ gem 'k8s-ruby'
 
 And then execute:
 
-    $ bundle
+    bundle
 
 Or install it yourself as:
 
-    $ gem install k8s-ruby
+    gem install k8s-ruby
 
 And then load the code using:
 
@@ -47,6 +47,7 @@ require 'k8s-ruby'
 ## Usage
 
 ### Overview
+
 The top-level `K8s::Client` provides access to separate `APIClient` instances for each Kubernetes API Group (`v1`, `apps/v1`, etc.), which in turns provides access to separate `ResourceClient` instances for each API resource type (`nodes`, `pods`, `deployments`, etc.).
 
 Individual resources are returned as `K8s::Resource` instances, which are `RecursiveOpenStruct` instances providing attribute access (`resource.metadata.name`). The resource instances are returned by methods such as `client.api('v1').resource('nodes').get('foo')`, and passed as arguments for `client.api('v1').resource('nodes').create_resource(res)`. Resources can also be loaded from disk using `K8s::Resource.from_files(path)`, and passed to the top-level methods such as `client.create_resource(res)`, which lookup the correct API/Resource client from the resource `apiVersion` and `kind`.
@@ -174,6 +175,7 @@ pods = client.api('v1').resource('pods', namespace: 'default').delete_collection
 ### Creating resources
 
 #### Programmatically defined resources
+
 ```ruby
 service = K8s::Resource.new({
   apiVersion: 'v1',
