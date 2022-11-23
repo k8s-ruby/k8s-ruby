@@ -1,16 +1,23 @@
 name: tests
 
 on:
-  push:
   pull_request:
 
 jobs:
-  build:
+  build-2-6:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose build --parallel
       - run: docker-compose up --build rspec-2.6
+
+  build-2-7:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       - run: docker-compose up --build rspec-2.7
+
+  build-3-0:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
       - run: docker-compose up --build rspec-3.0
