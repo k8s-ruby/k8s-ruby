@@ -1,13 +1,5 @@
 # K8s::Client provided by k8s-ruby
 
-## MAINTAINERS NEEDED
-
-## MAINTAINERS NEEDED
-
-## MAINTAINERS NEEDED
-
-see <https://github.com/k8s-ruby/k8s-ruby/issues/27>
-
 ## Readme continues
 
 Ruby client library for the Kubernetes (1.9+) API.
