@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.bindir        = "bin"
   spec.executables   = []
   spec.require_paths = ["lib"]
-  spec.required_ruby_version = [">= 2.4", "< 3.1"]
+  spec.required_ruby_version = spec.required_ruby_version = [">= 2.4", "< 3.2"]
 
   spec.add_runtime_dependency "excon", "~> 0.71"
   spec.add_runtime_dependency "dry-struct", "<= 1.6.0"
@@ -31,7 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "hashdiff", "~> 1.0.0"
   spec.add_runtime_dependency "jsonpath", "~> 0.9.5"
   spec.add_runtime_dependency "yajl-ruby", "~> 1.4.0"
-  spec.add_runtime_dependency "yaml-safe_load_stream2", "~> 0.1.1"
+  spec.add_runtime_dependency "yaml-safe_load_stream3"
 
   spec.add_development_dependency "bundler", ">= 1.17", "< 3.0"
   spec.add_development_dependency "rake", ">= 12.3.3"
