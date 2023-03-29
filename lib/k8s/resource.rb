@@ -23,7 +23,7 @@ module K8s
     # @param filename [String] file path
     # @return [K8s::Resource]
     def self.from_file(filename)
-      new(YAML.safe_load(File.read(filename), [], [], true, filename))
+      new(YAML.safe_load(File.read(filename), permitted_classes: [], permitted_symbols: [], aliases: true, filename: filename))
     end
 
     # @param path [String] file path
