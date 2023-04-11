@@ -111,7 +111,10 @@ module K8s
     # @param path [String]
     # @return [K8s::Config]
     def self.load_file(path)
-      new(YAML.safe_load(File.read(File.expand_path(path)), [Time, DateTime, Date], [], true))
+      new(YAML.safe_load(File.read(File.expand_path(path)),
+                         permitted_classes: [Time, DateTime, Date],
+                         permitted_symbols: [],
+                         aliases: true))
     end
 
     # Loads configuration files listed in KUBE_CONFIG environment variable and
