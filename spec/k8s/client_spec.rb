@@ -126,6 +126,9 @@ RSpec.describe K8s::Client do
     context 'from default file locations' do
       before do
         stub_const("ENV", {}) # ensure ENV['KUBECONFIG'] is not used
+        expect(File).to receive(:read).and_call_original
+        expect(File).to receive(:exist?).and_call_original
+        expect(File).to receive(:readable?).and_call_original
         expect(File).to receive(:exist?).with(default_kubeconfig_path).and_return(false)
         expect(File).to receive(:exist?).with('/etc/kubernetes/admin.conf').and_return(false)
         expect(File).to receive(:exist?).with('/etc/kubernetes/kubelet.conf').and_return(true)
