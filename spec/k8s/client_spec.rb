@@ -34,7 +34,6 @@ RSpec.describe K8s::Client do
 
     subject { described_class }
     context 'from KUBE_CA/KUBE_SERVER/KUBE_TOKEN variables' do
-
       let(:server) { "localhost" }
       let(:env) { { 'KUBE_TOKEN' => token, 'KUBE_CA' => ca, 'KUBE_SERVER' => server } }
 
@@ -125,18 +124,20 @@ RSpec.describe K8s::Client do
 
     context 'from default file locations' do
       before do
-        stub_const("ENV", {}) # ensure ENV['KUBECONFIG'] is not used
-        expect(File).to receive(:read).and_call_original
-        expect(File).to receive(:exist?).and_call_original
-        expect(File).to receive(:readable?).and_call_original
-        expect(File).to receive(:exist?).with(default_kubeconfig_path).and_return(false)
-        expect(File).to receive(:exist?).with('/etc/kubernetes/admin.conf').and_return(false)
-        expect(File).to receive(:exist?).with('/etc/kubernetes/kubelet.conf').and_return(true)
-        expect(File).to receive(:readable?).with('/etc/kubernetes/kubelet.conf').and_return(true)
+        stub_const("ENV", { 'KUBECONFIG' => nil }) # ensure ENV['KUBECONFIG'] is not used
+
+        allow(File).to receive(:read).and_call_original
+        allow(File).to receive(:exist?).and_call_original
+        allow(File).to receive(:readable?).and_call_original
+
+        allow(File).to receive(:exist?).with(default_kubeconfig_path).and_return(false)
+        allow(File).to receive(:exist?).with('/etc/kubernetes/admin.conf').and_return(false)
+        allow(File).to receive(:exist?).with('/etc/kubernetes/kubelet.conf').and_return(true)
+        allow(File).to receive(:readable?).with('/etc/kubernetes/kubelet.conf').and_return(true)
       end
 
       it 'loads a file if found' do
-        expect(File).to receive(:read).with('/etc/kubernetes/kubelet.conf').and_return(kubeconfig)
+        allow(File).to receive(:read).with('/etc/kubernetes/kubelet.conf').and_return(kubeconfig)
         expect(subject.autoconfig).to be_a K8s::Client
       end
     end
