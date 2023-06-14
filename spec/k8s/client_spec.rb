@@ -137,7 +137,7 @@ RSpec.describe K8s::Client do
       end
 
       it 'loads a file if found' do
-        allow(File).to receive(:read).with('/etc/kubernetes/kubelet.conf').and_return(kubeconfig)
+        expect(File).to receive(:read).with('/etc/kubernetes/kubelet.conf').and_return(kubeconfig)
         expect(subject.autoconfig).to be_a K8s::Client
       end
     end
