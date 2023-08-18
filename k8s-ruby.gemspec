@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.bindir        = "bin"
   spec.executables   = []
   spec.require_paths = ["lib"]
-  spec.required_ruby_version = spec.required_ruby_version = [">= 2.4", "< 3.2"]
+  spec.required_ruby_version = spec.required_ruby_version = [">= 2.4", "<= 3.2.2"]
 
   spec.add_runtime_dependency "excon", "~> 0.71"
   spec.add_runtime_dependency "dry-struct", "<= 1.6.0"
