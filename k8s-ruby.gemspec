@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "dry-configurable"
   spec.add_runtime_dependency "recursive-open-struct", "~> 1.1.3"
   spec.add_runtime_dependency "hashdiff", "~> 1.0.0"
-  spec.add_runtime_dependency "jsonpath", "~> 0.9.5"
+  spec.add_runtime_dependency "jsonpath", "~> 1.1"
   spec.add_runtime_dependency "yajl-ruby", "~> 1.4.0"
   spec.add_runtime_dependency "yaml-safe_load_stream3"
 
