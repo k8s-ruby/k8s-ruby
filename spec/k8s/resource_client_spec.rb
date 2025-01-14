@@ -1,7 +1,8 @@
 RSpec.describe K8s::ResourceClient do
   include FixtureHelpers
 
-  let(:transport) { K8s::Transport.new('http://localhost:8080') }
+  let(:transport_options) { {} }
+  let(:transport) { K8s::Transport.new('http://localhost:8080', **transport_options) }
 
   context "for the nodes API" do
     let(:api_client) { K8s::APIClient.new(transport, 'v1') }
@@ -382,6 +383,130 @@ RSpec.describe K8s::ResourceClient do
             )
           )
           subject.watch(timeout: 60)
+        end
+      end
+
+      describe '#exec' do
+        let(:ws) { double(Faye::WebSocket::Client, send: nil) }
+
+        before do
+          allow(Faye::WebSocket::Client).to receive(:new).and_return(ws)
+          allow(Termios).to receive(:tcgetattr).and_return(double(dup: double(lflag: 0, :'lflag=' => 0)))
+          allow(Termios).to receive(:tcsetattr).and_return(nil)
+          allow(ws).to receive(:on)
+        end
+
+        describe "authorization" do
+          before { exec }
+
+          context "when client cert and key data are provided" do
+            let(:transport_options) {
+              { client_cert_data: 'dummy-client-cert-data', client_key_data: 'dummy-client-key-data' }
+            }
+
+            it 'creates a websocket connection using the client cert and key data' do
+              expect(Faye::WebSocket::Client).to have_received(:new).with(
+                'ws://localhost:8080/api/v1/namespaces/test-namespace/pods/test-pod/exec?command=%2Fbin%2Fbash&container=test-container&stdin=true&stdout=true&tty=true',
+                [],
+                headers: {},
+                tls: hash_including(
+                  cert_chain_file: have_file_content('dummy-client-cert-data'),
+                  private_key_file: have_file_content('dummy-client-key-data'),
+                )
+              )
+            end
+          end
+
+          context "when client cert and key files are provided" do
+            let(:transport_options) {
+              { client_cert: '/var/run/dummy-client-cert-file.crt', client_key: '/var/run/dummy-client-key-file.key' }
+            }
+
+            it 'creates a websocket connection using the client cert and key files' do
+              expect(Faye::WebSocket::Client).to have_received(:new).with(
+                'ws://localhost:8080/api/v1/namespaces/test-namespace/pods/test-pod/exec?command=%2Fbin%2Fbash&container=test-container&stdin=true&stdout=true&tty=true',
+                [],
+                headers: {},
+                tls: hash_including(
+                  cert_chain_file: transport_options[:client_cert],
+                  private_key_file: transport_options[:client_key],
+                )
+              )
+            end
+          end
+
+          context "when authorization token is provided" do
+            let(:transport_options) {
+              { auth_token: 'dummy-auth-token' }
+            }
+
+            it 'creates a websocket connection using the authorization token' do
+              expect(Faye::WebSocket::Client).to have_received(:new).with(
+                'ws://localhost:8080/api/v1/namespaces/test-namespace/pods/test-pod/exec?command=%2Fbin%2Fbash&container=test-container&stdin=true&stdout=true&tty=true',
+                [],
+                headers: hash_including(
+                  'Authorization' => 'Bearer dummy-auth-token'
+                ),
+                tls: hash_including(
+                  cert_chain_file: nil,
+                  private_key_file: nil,
+                )
+              )
+            end
+          end
+        end
+
+        describe "command arguments" do
+          it "passes the command arguments to the websocket connection" do
+            exec(command: ['ls', '-la'])
+            expect(Faye::WebSocket::Client).to have_received(:new).with(
+              'ws://localhost:8080/api/v1/namespaces/test-namespace/pods/test-pod/exec?command=ls&command=-la&container=test-container&stdin=true&stdout=true&tty=true',
+              [],
+              anything
+            )
+          end
+        end
+
+        describe "stdin" do
+          before do
+            allow(EM).to receive(:open_keyboard).and_invoke( -> (handler) { EM.attach($stdin, handler) })
+          end
+
+          after do
+            $stdin = STDIN
+          end
+
+          it "passes the stdin input to the websocket connection with the stdin channel 0" do
+            rd, wd = IO.pipe
+            $stdin = rd
+
+            exec do
+              wd.write("ls\n")
+            end
+
+            expect(ws).to have_received(:send).with([0, 108, 115, 10])
+          end
+        end
+
+        private
+        def em
+          EM.run do
+            yield
+            EM.stop
+          end
+        end
+
+        def exec(name: 'test-pod', namespace: 'test-namespace', command: '/bin/bash', container: 'test-container')
+          em do
+            subject.exec(
+              name: name,
+              namespace: namespace,
+              command: command,
+              container: container
+            )
+            yield if block_given?
+            EM.stop
+          end
         end
       end
     end

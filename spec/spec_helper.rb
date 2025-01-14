@@ -1,6 +1,7 @@
 require "bundler/setup"
 require 'webmock/rspec'
 require 'byebug'
+require 'pty'
 
 require "k8s-ruby"
 
@@ -23,5 +24,13 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+
+  config.before(:suite) do
+    RSpec::Matchers.define :have_file_content do |expected_content|
+      match do |file_path|
+        File.read(file_path) == expected_content
+      end
+    end
   end
 end

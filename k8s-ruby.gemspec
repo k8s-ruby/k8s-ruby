@@ -33,6 +33,9 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "yajl-ruby", "~> 1.4"
   spec.add_runtime_dependency "yaml-safe_load_stream3"
   spec.add_runtime_dependency "base64"
+  spec.add_runtime_dependency "eventmachine", "~> 1.2"
+  spec.add_runtime_dependency "faye-websocket", "~> 0.11"
+  spec.add_runtime_dependency "ruby-termios", "~> 1.1"
 
   spec.add_development_dependency "bundler", ">= 1.17", "< 3.0"
   spec.add_development_dependency "rake", ">= 12.3.3"
