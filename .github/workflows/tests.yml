@@ -11,40 +11,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose build rspec-2.6
-      - run: docker-compose run rspec-2.6
+      - run: docker compose build rspec-2.6
+      - run: docker compose run rspec-2.6
 
   build-2-7:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose build rspec-2.7
-      - run: docker-compose run rspec-2.7
+      - run: docker compose build rspec-2.7
+      - run: docker compose run rspec-2.7
 
   build-3-0:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose build rspec-3.0
-      - run: docker-compose run rspec-3.0
+      - run: docker compose build rspec-3.0
+      - run: docker compose run rspec-3.0
 
   build-3-1:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose build rspec-3.1
-      - run: docker-compose run rspec-3.1
+      - run: docker compose build rspec-3.1
+      - run: docker compose run rspec-3.1
 
   build-3-2:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose build rspec-3.2
-      - run: docker-compose run rspec-3.2
+      - run: docker compose build rspec-3.2
+      - run: docker compose run rspec-3.2
 
   build-3-3:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: docker-compose build rspec-3.3
-      - run: docker-compose run rspec-3.3
+      - run: docker compose build rspec-3.3
+      - run: docker compose run rspec-3.3
+
+  build-3-4:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: docker compose build rspec-3.4
+      - run: docker compose run rspec-3.4
