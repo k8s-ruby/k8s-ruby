@@ -10,6 +10,7 @@
 .ruby-version
 .tool-versions
 /.byebug_history
+Gemfile.lock
 
 # rspec failure tracking
 .rspec_status

@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require_relative "resource_client/exec"
+
 module K8s
   # Per-APIResource type client.
   #
   # Used to get/list/update/patch/delete specific types of resources, optionally in some specific namespace.
+  #
   class ResourceClient
     # Common helpers used in both class/instance methods
     module Utils
@@ -35,6 +38,9 @@ module K8s
 
     include Utils
     extend Utils
+
+    # @!parse include K8s::ResourceClient::Exec
+    include Exec
 
     # Pipeline list requests for multiple resource types.
     #
