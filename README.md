@@ -226,6 +226,15 @@ client.api('v1').resource('pods', namespace: 'default').watch(labelSelector: {'r
 end
 ```
 
+
+### Exec into running containers
+> **WARNING:** This feature is currently supported only on Linux based platforms. Windows platforms are NOT supported.
+
+#### This opens a new shell in the `test-pod` container
+```ruby
+client.api('v1').resource('pods', namespace: 'default').exec(name: 'test-pod', container: 'shell', command: '/bin/sh')
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at [k8s-ruby/k8s-ruby](https://github.com/k8s-ruby/k8s-ruby).
