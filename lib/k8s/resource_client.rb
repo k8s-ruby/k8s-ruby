@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "resource_client/exec"
+require_relative "resource_client/exec" unless Gem::Platform.local.os =~ /mingw|mswin|windows/
 
 module K8s
   # Per-APIResource type client.
@@ -39,8 +39,10 @@ module K8s
     include Utils
     extend Utils
 
+    # Don't support Exec for windows since
+    # it depends on ruby-termios which is not supported for Windows platforms
     # @!parse include K8s::ResourceClient::Exec
-    include Exec
+    include Exec if defined?(Exec)
 
     # Pipeline list requests for multiple resource types.
     #
