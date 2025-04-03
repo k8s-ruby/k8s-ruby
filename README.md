@@ -228,9 +228,12 @@ end
 
 
 ### Exec into running containers
-> **WARNING:** This feature is currently supported only on Linux based platforms. Windows platforms are NOT supported.
 
-#### This opens a new shell in the `test-pod` container
+> [!WARNING]  
+> This feature is currently supported only on Linux and Darwin based platforms. Windows platforms are NOT supported. See [#61](https://github.com/k8s-ruby/k8s-ruby/pull/61) for more details.
+
+This opens a new shell in the `test-pod` container:
+
 ```ruby
 client.api('v1').resource('pods', namespace: 'default').exec(name: 'test-pod', container: 'shell', command: '/bin/sh')
 ```
