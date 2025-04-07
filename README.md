@@ -217,7 +217,7 @@ yaml = <<~YAML
   apiVersion: v1
   kind: Namespace
   metadata:
-    name: testing-from-yaml
+    name: test-namespace
 YAML
 
 resources = K8s::Resource.from_yaml(yaml)
