@@ -20,6 +20,15 @@ module K8s
       new(Yajl::Parser.parse(data))
     end
 
+    # @param yaml [String] yaml content
+    # @return [Array<K8s::Resource>]
+    def self.from_yaml(yaml)
+      resources = []
+      # YAML can contain multiple documents, so we need to parse each one
+      YAML.safe_load_stream(yaml, permitted_classes: [], permitted_symbols: [], aliases: true).map { |doc| resources << new(doc) }
+      resources
+    end
+
     # @param filename [String] file path
     # @return [K8s::Resource]
     def self.from_file(filename)

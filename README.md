@@ -127,7 +127,7 @@ K8s::Logging.debug!
 K8s::Transport.verbose!
 ```
 
-```
+```ruby
 I, [2018-08-09T14:19:50.404739 #1]  INFO -- K8s::Transport: Using config with server=https://167.99.39.233:6443
 I, [2018-08-09T14:19:50.629521 #1]  INFO -- K8s::Transport<https://167.99.39.233:6443>: GET /version => HTTP 200: <K8s::API::Version> in 0.224s
 I, [2018-08-09T14:19:50.681367 #1]  INFO -- K8s::Transport<https://167.99.39.233:6443>: GET /api/v1 => HTTP 200: <K8s::API::MetaV1::APIResourceList> in 0.046s
@@ -205,6 +205,22 @@ service = client.api('v1').resource('services').create_resource(service)
 ```ruby
 resources = K8s::Resource.from_files('./test.yaml')
 
+for resource in resources
+  resource = client.create_resource(resource)
+end
+```
+
+#### From YAML string
+
+```ruby
+yaml = <<~YAML
+  apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: testing-from-yaml
+YAML
+
+resources = K8s::Resource.from_yaml(yaml)
 for resource in resources
   resource = client.create_resource(resource)
 end
