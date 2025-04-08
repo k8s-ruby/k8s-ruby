@@ -210,6 +210,22 @@ for resource in resources
 end
 ```
 
+#### From YAML string
+
+```ruby
+yaml = <<~YAML
+  apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: test-namespace
+YAML
+
+resources = K8s::Resource.from_yaml(yaml)
+for resource in resources
+  resource = client.create_resource(resource)
+end
+```
+
 ### Patching resources
 
 ```ruby
