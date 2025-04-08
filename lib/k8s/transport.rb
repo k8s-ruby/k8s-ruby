@@ -3,6 +3,7 @@
 require 'excon'
 require 'json'
 require 'jsonpath'
+require 'net/http'
 
 module K8s
   # Excon-based HTTP transport handling request/response body JSON encoding
@@ -95,7 +96,7 @@ module K8s
     # @return [String]
     def self.token_from_auth_provider(auth_provider)
       if auth_provider['id-token']
-        json_path = auth_provider['id-token']
+        auth_provider['id-token']
       else
         auth_data = `#{auth_provider['cmd-path']} #{auth_provider['cmd-args']}`.strip
         if auth_provider['token-key']
@@ -137,11 +138,7 @@ module K8s
       port = ENV['KUBERNETES_SERVICE_PORT_HTTPS'].to_s
       raise(K8s::Error::Configuration, "in_cluster_config failed: KUBERNETES_SERVICE_PORT_HTTPS environment not set") if port.empty?
 
-      host_with_ipv6_brackets_if_needed = if host.include? "::"
-        "[#{host}]"
-      else
-        host
-      end
+      host_with_ipv6_brackets_if_needed = host.include?("::") ? "[#{host}]" : host
 
       new(
         "https://#{host_with_ipv6_brackets_if_needed}:#{port}",
@@ -289,21 +286,33 @@ module K8s
 
       excon_options = request_options(**options)
 
+      # Set up proper streaming configuration for streaming endpoints
+      if options[:response_block]
+        # For streaming responses, ensure we use unbuffered reads
+        excon_options[:response_block] = options[:response_block]
+        excon_options[:middlewares] = EXCON_MIDDLEWARES
+        excon_options[:persistent] = false # Don't use persistent connection for streaming
+        excon_options[:read_timeout] = options[:read_timeout] || 60 # Default timeout for streaming
+      end
+
       start = Time.now
+
+      # Use a fresh connection for streaming requests to avoid any buffering issues
       excon_client = options[:response_block] ? build_excon : excon
+
       response = excon_client.request(**excon_options)
       t = Time.now - start
 
       obj = options[:response_block] ? {} : parse_response(response, options, response_class: response_class)
     rescue K8s::Error::API => e
-      logger.warn { "#{format_request(options)} => HTTP #{e.code} #{e.reason} in #{'%.3f' % t}s" }
+      logger.warn { "#{format_request(options)} => HTTP #{e.code} #{e.reason} in #{format('%<time>.3f', time: t)}s" }
       logger.debug { "Request: #{excon_options[:body]}" } if excon_options[:body]
-      logger.debug { "Response: #{response.body}" }
+      logger.debug { "Response: #{response.body}" } if response&.body
       raise
     else
-      logger.info { "#{format_request(options)} => HTTP #{response.status}: <#{obj.class}> in #{'%.3f' % t}s" }
+      logger.info { "#{format_request(options)} => HTTP #{response.status}: <#{obj.class}> in #{format('%<time>.3f', time: t)}s" }
       logger.debug { "Request: #{excon_options[:body]}" } if excon_options[:body]
-      logger.debug { "Response: #{response.body}" }
+      logger.debug { "Response: #{response.body}" } if response&.body && !options[:response_block]
       obj
     end
 
@@ -339,17 +348,17 @@ module K8s
         rescue K8s::Error::ServiceUnavailable => e
           raise unless retry_errors
 
-          logger.warn { "Retry #{format_request(request_options)} => HTTP #{e.code} #{e.reason} in #{'%.3f' % t}s" }
+          logger.warn { "Retry #{format_request(request_options)} => HTTP #{e.code} #{e.reason} in #{format('%<time>.3f', time: t)}s" }
 
           # only retry the failed request, not the entire pipeline
           request(response_class: response_class, **common_options.merge(request_options))
         end
       }
     rescue K8s::Error => e
-      logger.warn { "[#{options.map{ |o| format_request(o) }.join ', '}] => HTTP #{e.code} #{e.reason} in #{'%.3f' % t}s" }
+      logger.warn { "[#{options.map{ |o| format_request(o) }.join ', '}] => HTTP #{e.code} #{e.reason} in #{format('%<time>.3f', time: t)}s" }
       raise
     else
-      logger.info { "[#{options.map{ |o| format_request(o) }.join ', '}] => HTTP [#{responses.map(&:status).join ', '}] in #{'%.3f' % t}s" }
+      logger.info { "[#{options.map{ |o| format_request(o) }.join ', '}] => HTTP [#{responses.map(&:status).join ', '}] in #{format('%<time>.3f', time: t)}s" }
       objects
     end
 

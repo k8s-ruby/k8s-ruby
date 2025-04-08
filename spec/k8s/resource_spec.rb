@@ -110,6 +110,40 @@ RSpec.describe K8s::Resource do
     end
   end
 
+  describe "for YAML string resources" do
+    context "with a single YAML document" do
+      let(:yaml) { fixture('resources/namespace.yml') }
+      let(:resources) { described_class.from_yaml(yaml) }
+
+      it "loads the resource from YAML string" do
+        expect(resources).to be_an(Array)
+        expect(resources.size).to eq 1
+        
+        resource = resources.first
+        expect(resource).to be_a K8s::Resource
+        expect(resource.kind).to eq 'Namespace'
+        expect(resource.apiVersion).to eq 'v1'
+        expect(resource.metadata.name).to eq 'test-namespace'
+      end
+    end
+
+    context "with multiple YAML documents" do
+      let(:yaml) { fixture('resources/service.yaml') + "---\n" + fixture('resources/namespace.yml') }
+      let(:resources) { described_class.from_yaml(yaml) }
+
+      it "loads multiple resources from YAML string" do
+        expect(resources).to be_an(Array)
+        expect(resources.size).to eq 2
+        
+        expect(resources[0].kind).to eq 'Service'
+        expect(resources[0].metadata.name).to eq 'whoami'
+        
+        expect(resources[1].kind).to eq 'Namespace'
+        expect(resources[1].metadata.name).to eq 'test-namespace'
+      end
+    end
+  end
+
   describe "for multiple resource files" do
     let(:resources) { described_class.from_files(fixture_path('resources/test')) }
 
