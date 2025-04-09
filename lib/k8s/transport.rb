@@ -388,50 +388,5 @@ module K8s
         **options
       )
     end
-
-    # Returns a websocket connection using part of the current transport configuration.
-    # Will use same host and port returned by #server.
-    # @param resource_path [String]
-    # @param query [Hash]
-    # @return [Faye::WebSocket::Client]
-    def build_ws_conn(resource_path, query = {})
-      private_key_file = nil
-      cert_chain_file = nil
-
-      on_open_callbacks = []
-
-      if options[:client_cert] && options[:client_key]
-        private_key_file = options[:client_key]
-        cert_chain_file = options[:client_cert]
-      elsif options[:client_cert_data] && options[:client_key_data]
-        temp_file_path_from_data = lambda do |data|
-          temp_file = Tempfile.new
-          temp_file.write(data)
-          temp_file.close
-          on_open_callbacks << -> { temp_file.unlink }
-          temp_file.path
-        end
-        private_key_file = temp_file_path_from_data.call(options[:client_key_data])
-        cert_chain_file = temp_file_path_from_data.call(options[:client_cert_data])
-      end
-
-      url = server.gsub("http", "ws") +
-            resource_path +
-            Excon::Utils.query_string(query: query)
-
-      ws = Faye::WebSocket::Client.new(
-        url,
-        [],
-        headers: request_options[:headers],
-        tls: {
-          verify_peer: !!options[:ssl_verify_peer],
-          private_key_file: private_key_file,
-          cert_chain_file: cert_chain_file
-        }
-      )
-
-      ws.on(:open) { on_open_callbacks.each(&:call) }
-      ws
-    end
   end
 end
