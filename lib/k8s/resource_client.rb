@@ -1,12 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "resource_client/exec" unless Gem::Platform.local.os =~ /mingw|mswin|windows/
-
 module K8s
   # Per-APIResource type client.
   #
   # Used to get/list/update/patch/delete specific types of resources, optionally in some specific namespace.
-  #
   class ResourceClient
     # Common helpers used in both class/instance methods
     module Utils
@@ -38,11 +35,6 @@ module K8s
 
     include Utils
     extend Utils
-
-    # Don't support Exec for windows since
-    # it depends on ruby-termios which is not supported for Windows platforms
-    # @!parse include K8s::ResourceClient::Exec
-    include Exec if defined?(Exec)
 
     # Pipeline list requests for multiple resource types.
     #
