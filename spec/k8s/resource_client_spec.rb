@@ -3,8 +3,7 @@
 RSpec.describe K8s::ResourceClient do
   include FixtureHelpers
 
-  let(:transport_options) { {} }
-  let(:transport) { K8s::Transport.new('http://localhost:8080', **transport_options) }
+  let(:transport) { K8s::Transport.new('http://localhost:8080') }
 
   context "for the nodes API" do
     let(:api_client) { K8s::APIClient.new(transport, 'v1') }
@@ -375,7 +374,7 @@ RSpec.describe K8s::ResourceClient do
           subject.watch(timeout: 60)
         end
       end
-
+      
       describe '#exec' do
         let(:ws) { double(Faye::WebSocket::Client, send: nil) }
 

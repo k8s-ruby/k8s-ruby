@@ -7,7 +7,6 @@ module K8s
   # Per-APIResource type client.
   #
   # Used to get/list/update/patch/delete specific types of resources, optionally in some specific namespace.
-  #
   class ResourceClient
     # Common helpers used in both class/instance methods
     module Utils
