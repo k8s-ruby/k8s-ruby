@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe K8s::ResourceClient do
   include FixtureHelpers
 
@@ -5,25 +7,16 @@ RSpec.describe K8s::ResourceClient do
 
   context "for the nodes API" do
     let(:api_client) { K8s::APIClient.new(transport, 'v1') }
-    let(:api_resource) { K8s::API::MetaV1::APIResource.new({
-      name: "nodes",
-      singularName: "",
-      namespaced: false,
-      kind: "Node",
-      verbs: [
-        "create",
-        "delete",
-        "deletecollection",
-        "get",
-        "list",
-        "patch",
-        "update",
-        "watch",
-      ],
-      shortNames: [
-        "no",
-      ]
-    }) }
+    let(:api_resource) do
+      K8s::API::MetaV1::APIResource.new(
+        name: "nodes",
+        singularName: "",
+        namespaced: false,
+        kind: "Node",
+        verbs: %w[create delete deletecollection get list patch update watch],
+        shortNames: %w[no]
+      )
+    end
 
     subject { described_class.new(transport, api_client, api_resource) }
 
@@ -56,11 +49,13 @@ RSpec.describe K8s::ResourceClient do
           list = subject.list
 
           expect(list).to match [K8s::Resource]
-          expect(list.map{|item| {
-            kind: item.kind,
-            namespace: item.metadata.namespace,
-            name: item.metadata.name,
-          } }).to match [
+          expect(list.map do |item|
+            {
+              kind: item.kind,
+              namespace: item.metadata.namespace,
+              name: item.metadata.name
+            }
+          end).to match [
             { kind: "Node", namespace: nil, name: "ubuntu-xenial" }
           ]
         end
@@ -90,11 +85,13 @@ RSpec.describe K8s::ResourceClient do
     end
 
     context "PUT /api/v1/nodes/*" do
-      let(:resource) { K8s::Resource.new({
-        kind: 'Node',
-        metadata: { name: 'test', resourceVersion: "1" },
-        spec: { unschedulable: true },
-      }) }
+      let(:resource) do
+        K8s::Resource.new(
+          kind: 'Node',
+          metadata: { name: 'test', resourceVersion: "1" },
+          spec: { unschedulable: true }
+        )
+      end
 
       before do
         stub_request(:put, 'localhost:8080/api/v1/nodes/test')
@@ -103,13 +100,13 @@ RSpec.describe K8s::ResourceClient do
             body: {
               'kind' => 'Node',
               'metadata' => { 'name' => 'test', 'resourceVersion' => "1" },
-              'spec' => { 'unschedulable' => true },
-            },
+              'spec' => { 'unschedulable' => true }
+            }
           )
           .to_return(
             status: 200,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
@@ -125,11 +122,13 @@ RSpec.describe K8s::ResourceClient do
     end
 
     context "POST /api/v1/nodes/" do
-      let(:resource) { K8s::Resource.new({
-        kind: 'Node',
-        metadata: { name: 'test' },
-        spec: { unschedulable: true },
-      }) }
+      let(:resource) do
+        K8s::Resource.new(
+          kind: 'Node',
+          metadata: { name: 'test' },
+          spec: { unschedulable: true }
+        )
+      end
 
       before do
         stub_request(:post, 'localhost:8080/api/v1/nodes')
@@ -138,13 +137,13 @@ RSpec.describe K8s::ResourceClient do
             body: {
               'kind' => 'Node',
               'metadata' => { 'name' => 'test' },
-              'spec' => { 'unschedulable' => true },
-            },
+              'spec' => { 'unschedulable' => true }
+            }
           )
           .to_return(
             status: 201,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
@@ -162,17 +161,15 @@ RSpec.describe K8s::ResourceClient do
 
   context "for the nodes status API" do
     let(:api_client) { K8s::APIClient.new(transport, 'v1') }
-    let(:api_resource) { K8s::API::MetaV1::APIResource.new({
-      name: "nodes/status",
-      singularName: "",
-      namespaced: false,
-      kind: "Node",
-      verbs: [
-        "get",
-        "patch",
-        "update",
-      ],
-    }) }
+    let(:api_resource) do
+      K8s::API::MetaV1::APIResource.new(
+        name: "nodes/status",
+        singularName: "",
+        namespaced: false,
+        kind: "Node",
+        verbs: %w[get patch update]
+      )
+    end
 
     subject { described_class.new(transport, api_client, api_resource) }
 
@@ -183,11 +180,13 @@ RSpec.describe K8s::ResourceClient do
     end
 
     context "PUT /api/v1/nodes/*/status" do
-      let(:resource) { K8s::Resource.new({
-        kind: 'Node',
-        metadata: { name: 'test', resourceVersion: "1" },
-        status: { foo: 'bar' },
-      }) }
+      let(:resource) do
+        K8s::Resource.new(
+          kind: 'Node',
+          metadata: { name: 'test', resourceVersion: "1" },
+          status: { foo: 'bar' }
+        )
+      end
 
       before do
         stub_request(:put, 'localhost:8080/api/v1/nodes/test/status')
@@ -196,13 +195,13 @@ RSpec.describe K8s::ResourceClient do
             body: {
               'kind' => 'Node',
               'metadata' => { 'name' => 'test', 'resourceVersion' => "1" },
-              'status' => { 'foo' => 'bar' },
-            },
+              'status' => { 'foo' => 'bar' }
+            }
           )
           .to_return(
             status: 200,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
@@ -220,35 +219,26 @@ RSpec.describe K8s::ResourceClient do
 
   context "for the pods API" do
     let(:api_client) { K8s::APIClient.new(transport, 'v1') }
-    let(:api_resource) { K8s::API::MetaV1::APIResource.new({
-      name: "pods",
-      singularName: "",
-      namespaced: true,
-      kind: "Pod",
-      verbs: [
-        "create",
-        "delete",
-        "deletecollection",
-        "get",
-        "list",
-        "patch",
-        "update",
-        "watch",
-      ],
-      shortNames: [
-        "po",
-      ],
-      categories: [
-        "all",
-      ]
-    }) }
+    let(:api_resource) do
+      K8s::API::MetaV1::APIResource.new(
+        name: "pods",
+        singularName: "",
+        namespaced: true,
+        kind: "Pod",
+        verbs: %w[create delete deletecollection get list patch update watch exec log],
+        shortNames: %w[po],
+        categories: %w[all]
+      )
+    end
 
     subject { described_class.new(transport, api_client, api_resource) }
 
-    let(:resource) { K8s::Resource.new({
-      kind: 'Pod',
-      metadata: { name: 'test', namespace: 'default' },
-    }) }
+    let(:resource) do
+      K8s::Resource.new(
+        kind: 'Pod',
+        metadata: { name: 'test', namespace: 'default' }
+      )
+    end
     let(:resource_list) { K8s::API::MetaV1::List.new(metadata: {}, items: [resource]) }
 
     context "POST /api/v1/pods/namespaces/default/pods" do
@@ -258,13 +248,13 @@ RSpec.describe K8s::ResourceClient do
             headers: { 'Content-Type' => 'application/json' },
             body: {
               'kind' => 'Pod',
-              'metadata' => { 'name' => 'test', 'namespace' => 'default' },
-            },
+              'metadata' => { 'name' => 'test', 'namespace' => 'default' }
+            }
           )
           .to_return(
             status: 201,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
@@ -286,19 +276,19 @@ RSpec.describe K8s::ResourceClient do
           .with(
             headers: { 'Content-Type' => 'application/strategic-merge-patch+json' },
             body: {
-              'spec' => { 'nodeName': 'foo' },
-            }.to_json, # XXX: webmock doesn't understand +json
+              'spec' => { 'nodeName': 'foo' }
+            }.to_json # XXX: webmock doesn't understand +json
           )
           .to_return(
             status: 201,
             headers: { 'Content-Type' => 'application/json' },
-            body: JSON.generate(resource.to_hash),
+            body: JSON.generate(resource.to_hash)
           )
       end
 
       describe '#merge_patch' do
         it "returns a resource" do
-          obj = subject.merge_patch('test', {'spec' => { 'nodeName' => 'foo'}}, namespace: 'default')
+          obj = subject.merge_patch('test', { 'spec' => { 'nodeName' => 'foo' } }, namespace: 'default')
 
           expect(obj).to match K8s::Resource
           expect(obj.kind).to eq "Pod"
@@ -382,6 +372,212 @@ RSpec.describe K8s::ResourceClient do
             )
           )
           subject.watch(timeout: 60)
+        end
+      end
+      
+      describe '#exec' do
+        let(:ws) { double(Faye::WebSocket::Client, send: nil) }
+
+        before do
+          allow(Faye::WebSocket::Client).to receive(:new).and_return(ws)
+          allow(Termios).to receive(:tcgetattr).and_return(double(dup: double(lflag: 0, 'lflag=': 0)))
+          allow(Termios).to receive(:tcsetattr).and_return(nil)
+          allow(ws).to receive(:on)
+        end
+
+        describe "authorization" do
+          before { exec }
+
+          context "when client cert and key data are provided" do
+            let(:transport_options) do
+              { client_cert_data: 'dummy-client-cert-data', client_key_data: 'dummy-client-key-data' }
+            end
+
+            it 'creates a websocket connection using the client cert and key data' do
+              expect(Faye::WebSocket::Client).to have_received(:new).with(
+                'ws://localhost:8080/api/v1/namespaces/test-namespace/pods/test-pod/exec?command=%2Fbin%2Fbash&container=test-container&stdin=true&stdout=true&tty=true',
+                [],
+                headers: {},
+                tls: hash_including(
+                  cert_chain_file: have_file_content('dummy-client-cert-data'),
+                  private_key_file: have_file_content('dummy-client-key-data')
+                )
+              )
+            end
+          end
+
+          context "when client cert and key files are provided" do
+            let(:transport_options) do
+              { client_cert: '/var/run/dummy-client-cert-file.crt', client_key: '/var/run/dummy-client-key-file.key' }
+            end
+
+            it 'creates a websocket connection using the client cert and key files' do
+              expect(Faye::WebSocket::Client).to have_received(:new).with(
+                'ws://localhost:8080/api/v1/namespaces/test-namespace/pods/test-pod/exec?command=%2Fbin%2Fbash&container=test-container&stdin=true&stdout=true&tty=true',
+                [],
+                headers: {},
+                tls: hash_including(
+                  cert_chain_file: transport_options[:client_cert],
+                  private_key_file: transport_options[:client_key]
+                )
+              )
+            end
+          end
+
+          context "when authorization token is provided" do
+            let(:transport_options) do
+              { auth_token: 'dummy-auth-token' }
+            end
+
+            it 'creates a websocket connection using the authorization token' do
+              expect(Faye::WebSocket::Client).to have_received(:new).with(
+                'ws://localhost:8080/api/v1/namespaces/test-namespace/pods/test-pod/exec?command=%2Fbin%2Fbash&container=test-container&stdin=true&stdout=true&tty=true',
+                [],
+                headers: hash_including(
+                  'Authorization' => 'Bearer dummy-auth-token'
+                ),
+                tls: hash_including(
+                  cert_chain_file: nil,
+                  private_key_file: nil
+                )
+              )
+            end
+          end
+        end
+
+        describe "command arguments" do
+          it "passes the command arguments to the websocket connection" do
+            exec(command: ['ls', '-la'])
+            expect(Faye::WebSocket::Client).to have_received(:new).with(
+              'ws://localhost:8080/api/v1/namespaces/test-namespace/pods/test-pod/exec?command=ls&command=-la&container=test-container&stdin=true&stdout=true&tty=true',
+              [],
+              anything
+            )
+          end
+        end
+
+        describe "stdin" do
+          before do
+            allow(EM).to receive(:open_keyboard).and_invoke(->(handler) { EM.attach($stdin, handler) })
+          end
+
+          after do
+            $stdin = STDIN
+          end
+
+          it "passes the stdin input to the websocket connection with the stdin channel 0" do
+            rd, wd = IO.pipe
+            $stdin = rd
+
+            exec do
+              wd.write("ls\n")
+            end
+
+            expect(ws).to have_received(:send).with([0, 108, 115, 10])
+          end
+        end
+
+        private
+
+        def em
+          EM.run do
+            yield
+            EM.stop
+          end
+        end
+
+        def exec(name: 'test-pod', namespace: 'test-namespace', command: '/bin/bash', container: 'test-container')
+          em do
+            subject.exec(
+              name: name,
+              namespace: namespace,
+              command: command,
+              container: container
+            )
+            yield if block_given?
+            EM.stop
+          end
+        end
+      end
+    end
+
+    describe '#logs' do
+      let(:pod_name) { 'test-pod' }
+      let(:namespace) { 'test-namespace' }
+      let(:container) { 'test-container' }
+
+      context "when getting logs without following" do
+        before do
+          stub_request(:get, "localhost:8080/api/v1/namespaces/#{namespace}/pods/#{pod_name}/log?container=#{container}&follow=false&timestamps=false")
+            .to_return(
+              status: 200,
+              body: "log line 1\nlog line 2\n",
+              headers: { 'Content-Type' => 'text/plain' }
+            )
+        end
+
+        it "returns the logs as a string" do
+          logs = subject.logs(name: pod_name, namespace: namespace, container: container)
+          expect(logs).to eq "log line 1\nlog line 2\n"
+        end
+      end
+
+      context "when following logs" do
+        let(:chunks) { ["log line 1\n", "log line 2\n"] }
+        let(:log_chunks) { [] }
+
+        before do
+          expect(transport).to receive(:request).with(
+            hash_including(
+              method: 'GET',
+              path: "/api/v1/namespaces/#{namespace}/pods/#{pod_name}/log",
+              query: hash_including(
+                container: container,
+                follow: true
+              ),
+              read_timeout: 3600,
+              response_block: instance_of(Proc)
+            )
+          ) do |args|
+            # Extract the response_block from the args
+            response_block = args[:response_block]
+            
+            # Simulate streaming response by calling the provided block with chunks
+            chunks.each do |chunk|
+              response_block.call(chunk)
+            end
+            {}
+          end
+        end
+
+        it "yields each chunk of logs to the block" do
+          subject.logs(name: pod_name, namespace: namespace, container: container, follow: true) do |chunk|
+            log_chunks << chunk
+          end
+          expect(log_chunks).to eq chunks
+        end
+      end
+
+      context "with additional parameters" do
+        before do
+          stub_request(:get, "localhost:8080/api/v1/namespaces/#{namespace}/pods/#{pod_name}/log?container=#{container}&follow=false&timestamps=true&tailLines=10&sinceTime=2023-01-01T00:00:00Z")
+            .to_return(
+              status: 200,
+              body: "2023-01-01T00:00:01Z log line 1\n2023-01-01T00:00:02Z log line 2\n",
+              headers: { 'Content-Type' => 'text/plain' }
+            )
+        end
+
+        it "includes all parameters in the request" do
+          logs = subject.logs(
+            name: pod_name,
+            namespace: namespace,
+            container: container,
+            timestamps: true,
+            tail_lines: 10,
+            since_time: '2023-01-01T00:00:00Z'
+          )
+          expect(logs).to eq "2023-01-01T00:00:01Z log line 1\n2023-01-01T00:00:02Z log line 2\n"
         end
       end
     end

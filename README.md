@@ -127,7 +127,7 @@ K8s::Logging.debug!
 K8s::Transport.verbose!
 ```
 
-```
+```ruby
 I, [2018-08-09T14:19:50.404739 #1]  INFO -- K8s::Transport: Using config with server=https://167.99.39.233:6443
 I, [2018-08-09T14:19:50.629521 #1]  INFO -- K8s::Transport<https://167.99.39.233:6443>: GET /version => HTTP 200: <K8s::API::Version> in 0.224s
 I, [2018-08-09T14:19:50.681367 #1]  INFO -- K8s::Transport<https://167.99.39.233:6443>: GET /api/v1 => HTTP 200: <K8s::API::MetaV1::APIResourceList> in 0.046s
@@ -210,6 +210,22 @@ for resource in resources
 end
 ```
 
+#### From YAML string
+
+```ruby
+yaml = <<~YAML
+  apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: test-namespace
+YAML
+
+resources = K8s::Resource.from_yaml(yaml)
+for resource in resources
+  resource = client.create_resource(resource)
+end
+```
+
 ### Patching resources
 
 ```ruby
@@ -224,6 +240,48 @@ client.api('apps/v1').resource('deployments', namespace: 'default').merge_patch(
 client.api('v1').resource('pods', namespace: 'default').watch(labelSelector: {'role' => 'test'}) do |watch_event|
   puts "type=#{watch_event.type} pod=#{watch_event.resource.metadata.name}"
 end
+```
+
+
+### Exec into running containers
+
+> [!WARNING]  
+> This feature is currently supported only on Linux and Darwin based platforms. Windows platforms are NOT supported. See [#61](https://github.com/k8s-ruby/k8s-ruby/pull/61) for more details.
+
+This opens a new shell in the `test-pod` container:
+
+```ruby
+client.api('v1').resource('pods', namespace: 'default').exec(name: 'test-pod', container: 'shell', command: '/bin/sh')
+```
+
+### Getting pod logs
+
+You can get logs from a pod's container:
+
+```ruby
+# Get logs as a string
+logs = client.api('v1').resource('pods', namespace: 'default').logs(
+  name: 'test-pod',
+  container: 'app'
+)
+
+# Follow logs with a block
+client.api('v1').resource('pods', namespace: 'default').logs(
+  name: 'test-pod',
+  container: 'app',
+  follow: true
+) do |chunk|
+  puts chunk
+end
+
+# Get logs with additional parameters
+logs = client.api('v1').resource('pods', namespace: 'default').logs(
+  name: 'test-pod',
+  container: 'app',
+  timestamps: true,
+  tail_lines: 10,
+  since_time: '2023-01-01T00:00:00Z'
+)
 ```
 
 ## Contributing

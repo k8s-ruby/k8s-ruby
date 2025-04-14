@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require_relative "resource_client/exec" unless Gem::Platform.local.os =~ /mingw|mswin|windows/
+require_relative "resource_client/log"
+
 module K8s
   # Per-APIResource type client.
   #
@@ -35,6 +38,12 @@ module K8s
 
     include Utils
     extend Utils
+
+    # Don't support Exec for windows since
+    # it depends on ruby-termios which is not supported for Windows platforms
+    # @!parse include K8s::ResourceClient::Exec
+    include Exec if defined?(Exec)
+    include Log
 
     # Pipeline list requests for multiple resource types.
     #
@@ -306,7 +315,7 @@ module K8s
 
     # @param name [String]
     # @param namespace [String, nil]
-    # @param propagationPolicy [String, nil] The propagationPolicy to use for the API call. Possible values include “Orphan”, “Foreground”, or “Background”
+    # @param propagationPolicy [String, nil] The propagationPolicy to use for the API call. Possible values include "Orphan", "Foreground", or "Background"
     # @return [K8s::API::MetaV1::Status]
     def delete(name, namespace: @namespace, propagationPolicy: nil)
       @transport.request(
