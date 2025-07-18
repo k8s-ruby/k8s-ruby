@@ -43,3 +43,12 @@ services:
     volumes:
       - .:/app
     entrypoint: bundle exec rspec
+  rspec-3.4:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ruby:3.4
+    volumes:
+      - .:/app
+    entrypoint: bundle exec rspec
+
