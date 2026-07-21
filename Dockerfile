@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=ruby:2.7
+ARG BASE_IMAGE=ruby:3.1
 FROM ${BASE_IMAGE}
 
 RUN gem install bundler:2.3.5
