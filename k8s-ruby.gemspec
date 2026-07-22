@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   spec.required_ruby_version = ">= 2.4"
 
-  spec.add_runtime_dependency "excon", ">= 0.71"
+  spec.add_runtime_dependency "excon", ">= 1.5"
   spec.add_runtime_dependency "dry-struct"
   spec.add_runtime_dependency "dry-types"
   spec.add_runtime_dependency "dry-configurable"
