@@ -78,7 +78,7 @@ module K8s
         options[:auth_token] = token_from_auth_provider(auth_provider)
       elsif exec_conf = config.user.exec
         logger.debug "Using config with .user.exec.command=#{exec_conf.command}"
-        options[:auth_token] = token_from_exec(exec_conf)
+        options[:auth_token], options[:auth_token_expiration] = token_from_exec(exec_conf)
       elsif config.user.username && config.user.password
         logger.debug "Using config with .user.password=..."
 
@@ -88,7 +88,7 @@ module K8s
 
       logger.info "Using config with server=#{server}"
 
-      new(server, **options, **overrides)
+      new(server, config, **options, **overrides)
     end
 
     # @param auth_provider [K8s::Config::UserAuthProvider]
@@ -121,7 +121,18 @@ module K8s
       auth_json = `#{cmd.join(' ')}`.strip
       ENV.replace(orig_env)
 
-      JSON.parse(auth_json).dig('status', 'token')
+#       logger.info("auth_json: #{auth_json}")
+
+      parsed_auth_json = JSON.parse(auth_json)
+      token = parsed_auth_json.dig('status', 'token')
+      expiration = parsed_auth_json.dig('status', 'expirationTimestamp')
+      expiration_datetime = DateTime.parse(expiration)
+#       logger.info("token: #{token}, expiration: #{expiration_datetime}")
+
+#       is_expired = DateTime.now > expiration_datetime
+#       logger.info("is expired? #{is_expired} now: #{DateTime.now}, expiration: #{expiration_datetime}, expires in #{expiration_datetime.to_time.to_i - DateTime.now.to_time.to_i}")
+
+      [token, expiration_datetime]
     end
 
     # In-cluster config within a kube pod, using the kubernetes service envs and serviceaccount secrets
@@ -148,6 +159,7 @@ module K8s
         ssl_verify_peer: options.key?(:ssl_verify_peer) ? options.delete(:ssl_verify_peer) : true,
         ssl_ca_file: options.delete(:ssl_ca_file) || File.join((ENV['TELEPRESENCE_ROOT'] || '/'), 'var/run/secrets/kubernetes.io/serviceaccount/ca.crt'),
         auth_token: options.delete(:auth_token) || File.read(File.join((ENV['TELEPRESENCE_ROOT'] || '/'), 'var/run/secrets/kubernetes.io/serviceaccount/token')),
+        is_in_cluster: true,
         **options
       )
     end
@@ -159,12 +171,15 @@ module K8s
     # @param auth_username [String] optional Basic authentication username
     # @param auth_password [String] optional Basic authentication password
     # @param options [Hash] @see Excon.new
-    def initialize(server, auth_token: nil, auth_username: nil, auth_password: nil, **options)
+    def initialize(server, config=nil, auth_token: nil, auth_token_expiration: nil, auth_username: nil, auth_password: nil, is_in_cluster: nil, **options)
       uri = URI.parse(server)
       @server = "#{uri.scheme}://#{uri.host}:#{uri.port}"
+      @config = config
       @path_prefix = File.join('/', uri.path, '/') # add leading and/or trailing slashes
       @auth_token = auth_token
+      @auth_token_expiration = auth_token_expiration
       @auth_username = auth_username
+      @is_in_cluster = is_in_cluster
       @auth_password = auth_password
       @options = options
 
@@ -200,6 +215,12 @@ module K8s
     # @return [Hash]
     def request_options(request_object: nil, content_type: 'application/json', **options)
       options[:headers] ||= {}
+
+      # Check if the token has expired, regenerate it if required
+      token_expired = !@is_in_cluster && DateTime.now > @auth_token_expiration
+      if @auth_token && token_expired
+        @auth_token, @auth_token_expiration = self.class.token_from_exec(@config)
+      end
 
       if @auth_token
         options[:headers]['Authorization'] = "Bearer #{@auth_token}"
