@@ -9,7 +9,6 @@ COPY Gemfile *.gemspec ./
 COPY lib/k8s/ruby/version.rb ./lib/k8s/ruby/
 
 RUN bundle install
-RUN bundle update --bundler
 
 COPY . .
 ENTRYPOINT ["/app/entrypoint.sh"]
