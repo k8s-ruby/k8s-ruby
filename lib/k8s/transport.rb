@@ -183,6 +183,7 @@ module K8s
         persistent: true,
         middlewares: EXCON_MIDDLEWARES,
         headers: REQUEST_HEADERS,
+        include_default_port: !@options[:omit_default_port],
         **@options
       )
     end
